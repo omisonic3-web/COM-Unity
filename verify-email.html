@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <title>Verificare email — COM-Unity</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      color: #edf2f7;
+      background: linear-gradient(145deg, #101827, #172b46);
+    }
+
+    .card {
+      width: 100%;
+      max-width: 460px;
+      padding: 38px 28px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 22px;
+      background: rgba(255,255,255,.07);
+      box-shadow: 0 24px 70px rgba(0,0,0,.3);
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: #8bbcff;
+    }
+
+    .icon {
+      margin: 28px auto 18px;
+      font-size: 48px;
+    }
+
+    h1 { font-size: 25px; }
+
+    p {
+      color: #bdc9d8;
+      line-height: 1.7;
+    }
+
+    .button {
+      display: inline-block;
+      margin-top: 22px;
+      padding: 14px 25px;
+      border-radius: 11px;
+      background: #3478d4;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .status { margin-top: 16px; }
+
+    .error { color: #ff9999; }
+    .success { color: #8ce3b0; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="logo">COM-Unity</div>
+    <div class="icon" id="icon">✉️</div>
+    <h1 id="title">Verificăm adresa ta de email</h1>
+    <p id="message">Te rugăm să aștepți câteva momente.</p>
+    <p class="status" id="status">Se procesează...</p>
+    <a class="button hidden" id="home" href="/">Înapoi la COM-Unity</a>
+  </main>
+
+  <script>
+    const title = document.getElementById("title");
+    const message = document.getElementById("message");
+    const status = document.getElementById("status");
+    const icon = document.getElementById("icon");
+    const home = document.getElementById("home");
+
+    async function verifyEmail() {
+      const token = new URLSearchParams(location.search).get("token");
+
+      if (!token || !/^[a-f0-9]{64}$/i.test(token)) {
+        showError("Link de verificare invalid.");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/auth/verify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ token })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "Verificarea nu a reușit.");
+        }
+
+        icon.textContent = "✓";
+        title.textContent = "Email verificat!";
+        message.textContent =
+          "Adresa ta de email a fost confirmată. Contul COM-Unity este activ.";
+        status.textContent =
+          "Poți reveni pe platformă și te poți autentifica.";
+        status.className = "status success";
+        home.classList.remove("hidden");
+
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function showError(text) {
+      icon.textContent = "⚠️";
+      title.textContent = "Verificarea nu a reușit";
+      message.textContent = text;
+      status.textContent =
+        "Linkul poate fi expirat sau deja utilizat.";
+      status.className = "status error";
+      home.classList.remove("hidden");
+    }
+
+    verifyEmail();
+  </script>
+</body>
+</html>
