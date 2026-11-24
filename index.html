@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>COM-Unity – ajutor reciproc în comunitate</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+:root{--navy:#0b1a2b;--navy2:#13283f;--gold:#d2ad66;--teal:#6cc3b3;--coral:#f08a72;
+--bg:#f6f4ef;--surface:#fff;--ink:#0b1a2b;--muted:#566677;--line:#e3dfd5;--need:#b4432c;--need-bg:#fbe8e2;--offer:#17705f;--offer-bg:#e0f1ec;--shadow:0 1px 2px rgba(11,26,43,.06),0 12px 32px -12px rgba(11,26,43,.18);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#08131f;--surface:#101f31;--ink:#eef2f5;--muted:#9fb0bf;--line:#1f3347;--need:#f5a18d;--need-bg:#3a2320;--offer:#7fd6c5;--offer-bg:#12332e;--shadow:0 12px 32px -12px rgba(0,0,0,.6)}}
+:root[data-theme="dark"]{--bg:#08131f;--surface:#101f31;--ink:#eef2f5;--muted:#9fb0bf;--line:#1f3347;--need:#f5a18d;--need-bg:#3a2320;--offer:#7fd6c5;--offer-bg:#12332e;--shadow:0 12px 32px -12px rgba(0,0,0,.6)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth;height:auto}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.65 Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+h1,h2,h3,.logo{font-family:Fraunces,Georgia,"Times New Roman",serif}
+/* hero */
+.hero{background:radial-gradient(900px 500px at 85% 10%,#1d4160 0%,transparent 60%),var(--navy);color:#f3efe6;padding-bottom:72px;position:relative;overflow:hidden}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 0;gap:12px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:26px;text-decoration:none;letter-spacing:.01em}
+.logo i{color:var(--gold);font-style:normal}
+nav{display:flex;gap:26px;font-size:15px;font-weight:500}
+nav a{text-decoration:none;color:#c6d0da}
+nav a:hover{color:#fff}
+.heroGrid{display:grid;grid-template-columns:1.25fr .75fr;gap:32px;align-items:center;padding-top:44px}
+h1{font-size:clamp(38px,6.4vw,68px);line-height:1.04;letter-spacing:-.02em;font-weight:600;margin:0 0 20px}
+.lead{font-size:19px;color:var(--muted);max-width:54ch;margin:0 0 26px}
+.hero .lead{color:#c3cfdb}
+.rings{width:100%;max-width:340px;justify-self:center;filter:drop-shadow(0 20px 40px rgba(0,0,0,.35))}
+.btn{display:inline-block;border:0;border-radius:999px;padding:14px 28px;font:700 16px Manrope,system-ui,sans-serif;background:var(--gold);color:#241a05;cursor:pointer;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px -8px rgba(210,173,102,.7)}
+.btn.ghost{background:transparent;color:#f3efe6;border:1.5px solid rgba(243,239,230,.45)}
+.btn.sm{padding:9px 18px;font-size:15px;background:var(--ink);color:var(--bg)}
+.cta{display:flex;gap:14px;flex-wrap:wrap}
+.stats{display:flex;gap:0;margin-top:44px;border-top:1px solid rgba(243,239,230,.18);flex-wrap:wrap}
+.stats div{flex:1 1 140px;padding:18px 20px 0 0;font-size:15px;color:#aebccb}
+.stats strong{display:block;font-family:Fraunces,Georgia,serif;font-size:38px;font-weight:600;color:#f3efe6;line-height:1.1}
+/* sections */
+section{padding:72px 0}
+h2{font-size:clamp(28px,4.2vw,42px);letter-spacing:-.015em;margin:0 0 10px;line-height:1.12;font-weight:600}
+.board-head{display:flex;justify-content:space-between;align-items:end;gap:18px;flex-wrap:wrap;margin-bottom:26px}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tab{border:0;background:transparent;color:var(--muted);border-radius:999px;padding:8px 18px;font:600 15px Manrope,system-ui,sans-serif;cursor:pointer}
+.tab[aria-pressed="true"]{background:var(--navy);color:#f3efe6}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.tag{align-self:flex-start;font-size:13.5px;font-weight:700;padding:4px 13px;border-radius:999px}
+.tag.need{background:var(--need-bg);color:var(--need)}
+.tag.offer{background:var(--offer-bg);color:var(--offer)}
+.card h3{margin:2px 0 0;font-size:22px;line-height:1.22;font-weight:600}
+.card p{margin:0;color:var(--muted);font-size:16px}
+.meta{margin-top:auto;padding-top:8px;font-size:14px;color:var(--muted)}
+.card .btn{align-self:flex-start;margin-top:6px}
+/* steps */
+.band{background:var(--navy);color:#f3efe6}
+.band .lead{color:#c3cfdb}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:36px;counter-reset:s;padding:0;list-style:none;margin:34px 0 0}
+.steps li{counter-increment:s;border-top:1px solid rgba(243,239,230,.25);padding-top:18px}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--gold);color:#241a05;font:700 18px Fraunces,Georgia,serif;margin-bottom:14px}
+.steps strong{font:600 23px Fraunces,Georgia,serif}
+.steps p{margin:6px 0 0;color:#b9c6d3}
+/* projects */
+.proj{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:26px 28px;margin-bottom:18px;box-shadow:var(--shadow);display:grid;grid-template-columns:1.3fr 1fr;gap:12px 40px;align-items:center}
+.proj h3{margin:0 0 4px;font-size:24px;font-weight:600}
+.proj p{margin:0;color:var(--muted)}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar span{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:99px}
+.barlab{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-top:8px}
+/* form */
+.formGrid{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;align-items:start}
+form{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:30px;display:grid;gap:16px;box-shadow:var(--shadow)}
+label{font-weight:600;font-size:15px;display:grid;gap:6px}
+input,select,textarea{font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+.msg{min-height:1.4em;font-weight:600;color:var(--offer)}
+footer{background:var(--navy);color:#aebccb;padding:34px 0 44px;font-size:15px}
+footer .logo{color:#f3efe6;display:inline-block;margin-bottom:8px}
+.stories{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;margin-top:26px}
+.story{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.story blockquote{margin:0;font:500 21px/1.45 Fraunces,Georgia,serif}
+.story cite{font-style:normal;font-size:15px;color:var(--muted)}
+.navbtn{background:transparent;border:1.5px solid rgba(243,239,230,.4);color:#f3efe6;border-radius:999px;padding:6px 16px;font:600 14px Manrope,system-ui,sans-serif;cursor:pointer}
+.navbtn:hover{border-color:var(--gold);color:var(--gold)}
+dialog{border:0;border-radius:22px;padding:0;background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.6);width:min(92vw,420px)}
+dialog::backdrop{background:rgba(5,12,20,.65)}
+dialog form{box-shadow:none;border:0}
+.err{min-height:1.4em;font-weight:600;color:var(--need)}
+.adminBox{background:var(--surface);border:2px solid var(--gold);border-radius:22px;padding:30px;box-shadow:var(--shadow)}
+.adminBox h3{font-size:24px;margin:0 0 6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.sl{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:10px}
+.sl li{display:flex;justify-content:space-between;gap:12px;align-items:center;border-top:1px solid var(--line);padding-top:10px;font-size:15px}
+.btn.del{background:var(--need-bg);color:var(--need)}
+@media (max-width:760px){.heroGrid,.formGrid,.proj{grid-template-columns:1fr}.rings{max-width:220px;order:-1;justify-self:start}nav{gap:16px;font-size:14px}section{padding:52px 0}.hero{padding-bottom:48px}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+</style>
+</head>
+<body>
+<div class="hero">
+<div class="wrap">
+<header>
+  <a class="logo" href="#top">COM<i>-</i>Unity</a>
+  <nav aria-label="Principal"><a href="#panou">Panou</a><a href="#cum">Cum funcționează</a><a href="#proiecte">Proiecte</a><a href="#povesti">Povești</a><a href="#alatura-te">Alătură-te</a><button class="navbtn" id="adminBtn" type="button">Administrator</button></nav>
+</header>
+<div class="heroGrid" id="top">
+  <div>
+    <h1>Comunitatea e cea mai bună plasă de siguranță.</h1>
+    <p class="lead">COM-Unity îi pune în legătură pe cei care au nevoie de ajutor cu cei care pot ajuta și susține inițiativele locale pentru oamenii dezavantajați.</p>
+    <div class="cta"><a class="btn" href="#alatura-te">Cer sau ofer ajutor</a><a class="btn ghost" href="#proiecte">Vezi proiectele</a></div>
+  </div>
+  <svg class="rings" viewBox="0 0 320 300" role="img" aria-label="Trei cercuri care se întrepătrund, simbol al comunității">
+    <g fill="none" stroke-width="3">
+      <circle cx="120" cy="120" r="84" stroke="#d2ad66"/>
+      <circle cx="200" cy="120" r="84" stroke="#6cc3b3"/>
+      <circle cx="160" cy="188" r="84" stroke="#f08a72"/>
+    </g>
+    <g fill-opacity=".14"><circle cx="120" cy="120" r="84" fill="#d2ad66"/><circle cx="200" cy="120" r="84" fill="#6cc3b3"/><circle cx="160" cy="188" r="84" fill="#f08a72"/></g>
+    <circle cx="160" cy="142" r="7" fill="#f3efe6"/>
+  </svg>
+</div>
+<div class="stats" aria-label="Rezultate în comunitate">
+  <div><strong id="sNeeds">0</strong>cereri deschise</div>
+  <div><strong id="sOffers">0</strong>oferte de ajutor</div>
+  <div><strong>3</strong>proiecte active</div>
+</div>
+</div>
+</div>
+
+<main>
+  <section id="panou" aria-labelledby="t-panou"><div class="wrap">
+    <div class="board-head">
+      <div><h2 id="t-panou">Panoul comunității</h2><p class="lead" style="margin:0">Cereri și oferte de ajutor din apropierea ta.</p></div>
+      <div class="tabs" role="group" aria-label="Filtru">
+        <button class="tab" aria-pressed="true" data-f="all">Toate</button>
+        <button class="tab" aria-pressed="false" data-f="need">Am nevoie</button>
+        <button class="tab" aria-pressed="false" data-f="offer">Ofer</button>
+      </div>
+    </div>
+    <div class="grid" id="board"></div>
+  </div></section>
+
+  <section id="cum" class="band" aria-labelledby="t-cum"><div class="wrap">
+    <h2 id="t-cum">Cum funcționează</h2>
+    <p class="lead" style="margin:0">Trei pași simpli, fără birocrație.</p>
+    <ol class="steps">
+      <li><strong>Postezi</strong><p>Spui ce îți trebuie sau ce poți oferi: o masă caldă, transport, meditații, haine, o oră de companie.</p></li>
+      <li><strong>Te potrivim</strong><p>Voluntarii din zona ta văd postarea și te contactează.</p></li>
+      <li><strong>Vă întâlniți</strong><p>Stabiliți împreună când și unde, apoi confirmați că totul a decurs bine.</p></li>
+    </ol>
+  </div></section>
+
+  <section id="proiecte" aria-labelledby="t-proj"><div class="wrap">
+    <h2 id="t-proj">Inițiative pentru cei dezavantajați</h2>
+    <p class="lead">Proiecte conduse de oameni din comunitate. Fiecare are nevoie de voluntari sau donații.</p>
+    <div class="proj"><div><h3>Masa caldă de sâmbătă</h3><p>Gătim și servim prânzul pentru vârstnici singuri și familii cu venituri mici.</p></div>
+      <div><div class="bar" role="progressbar" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100" aria-label="Voluntari strânși"><span style="width:72%"></span></div><div class="barlab"><span>18 din 25 voluntari</span><span>72%</span></div></div></div>
+    <div class="proj"><div><h3>Ghiozdane pentru toți copiii</h3><p>Strângem rechizite și ghiozdane pentru elevi din familii vulnerabile.</p></div>
+      <div><div class="bar" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" aria-label="Ghiozdane strânse"><span style="width:45%"></span></div><div class="barlab"><span>90 din 200 ghiozdane</span><span>45%</span></div></div></div>
+    <div class="proj"><div><h3>Vecin de încredere</h3><p>Voluntari care fac cumpărături și merg cu vârstnicii la medic.</p></div>
+      <div><div class="bar" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" aria-label="Voluntari strânși"><span style="width:30%"></span></div><div class="barlab"><span>6 din 20 voluntari</span><span>30%</span></div></div></div>
+  </div></section>
+
+  <section id="povesti" aria-labelledby="t-st" style="padding-top:24px"><div class="wrap">
+    <h2 id="t-st">Povești din comunitate</h2>
+    <p class="lead" style="margin:0">Oameni care și-au dat mâna și au schimbat ceva. Exemple de demonstrație.</p>
+    <div class="stories" id="stories"></div>
+  </div></section>
+
+  <section id="admin" hidden aria-labelledby="t-ad" style="padding-top:8px"><div class="wrap"><div class="adminBox">
+    <div class="row"><h3 id="t-ad">Panou administrator</h3><button class="btn sm" id="logout" type="button">Ieși din cont</button></div>
+    <p style="color:var(--muted);margin:0 0 14px">Poți șterge postările de pe panou (butonul apare pe fiecare card) și poți gestiona poveștile.</p>
+    <form id="sf" style="box-shadow:none;padding:0;border:0">
+      <label>Titlul poveștii<input id="stTitle" required maxlength="120" placeholder="Ex: Un acoperiș nou înainte de iarnă"></label>
+      <label>Povestea<textarea id="stText" rows="3" required maxlength="300"></textarea></label>
+      <label>Autor sau localitate<input id="stAuthor" required maxlength="60" placeholder="Ex: Ana, Târgu Jiu"></label>
+      <button class="btn" type="submit">Adaugă povestea</button>
+    </form>
+    <ul class="sl" id="stList"></ul>
+  </div></div></section>
+
+  <section id="alatura-te" aria-labelledby="t-join" style="padding-top:24px"><div class="wrap formGrid">
+    <div><h2 id="t-join">Postează pe panou</h2><p class="lead">Durează un minut. Îți cerem doar ce e necesar ca să te poată găsi cineva.</p></div>
+    <form id="f">
+      <label>Ce vrei să faci?
+        <select id="kind"><option value="need">Am nevoie de ajutor</option><option value="offer">Vreau să ofer ajutor</option></select></label>
+      <label>Titlu scurt
+        <input id="title" required maxlength="70" placeholder="Ex: Transport la spital marți"></label>
+      <label>Detalii
+        <textarea id="desc" rows="3" maxlength="240" placeholder="Ce, când, cât timp"></textarea></label>
+      <label>Localitate sau cartier
+        <input id="place" required maxlength="50" placeholder="Ex: Târgu Jiu, centru"></label>
+      <button class="btn" type="submit">Publică pe panou</button>
+      <div class="msg" id="msg" role="status" aria-live="polite"></div>
+    </form>
+  </div></section>
+</main>
+
+<dialog id="login" aria-labelledby="t-lg">
+  <form id="lf" method="dialog">
+    <h3 id="t-lg" style="margin:0;font-size:26px">Autentificare administrator</h3>
+    <label>Email<input id="lu" type="email" required autocomplete="username"></label>
+    <label>Parolă<input id="lp" type="password" required autocomplete="current-password"></label>
+    <div class="err" id="lerr" role="alert"></div>
+    <div class="row"><button class="btn" type="submit">Intră în cont</button><button class="btn sm" type="button" id="lcancel">Anulează</button></div>
+  </form>
+</dialog>
+
+<footer><div class="wrap"><a class="logo" href="#top">COM<i style="color:var(--gold);font-style:normal">-</i>Unity</a><br>Un spațiu de ajutor reciproc. Postările de mai sus sunt exemple de demonstrație; postările noi nu se salvează după închiderea paginii.</div></footer>
+
+<script>
+var items=[
+{k:'need',t:'Transport la spital, marți',d:'Doamnă de 78 de ani, are nevoie de însoțitor și mașină până la policlinică.',p:'Centru'},
+{k:'offer',t:'Meditații gratuite la matematică',d:'Profesor pensionar, clasele V–VIII, două seri pe săptămână.',p:'Cartier Nord'},
+{k:'need',t:'Haine groase pentru copii',d:'Familie cu trei copii (4, 7, 10 ani), mărimi 104–146.',p:'Periferie'},
+{k:'offer',t:'Pot duce cumpărături vecinilor',d:'Am mașină și timp dimineața, între 8 și 11.',p:'Cartier Sud'},
+{k:'need',t:'Reparație la acoperiș',d:'Vârstnic singur, are nevoie de cineva priceput înainte de iarnă.',p:'Sat apropiat'},
+{k:'offer',t:'Găzduiesc o masă comună',d:'Am o sală pentru 20 de persoane, o dată pe lună.',p:'Centru'}
+];
+var filter='all',board=document.getElementById('board');
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function render(){
+  board.innerHTML='';var n=0,o=0;
+  items.forEach(function(it,i){
+    if(it.k==='need')n++;else o++;
+    if(filter!=='all'&&it.k!==filter)return;
+    var c=document.createElement('article');c.className='card';
+    c.innerHTML='<span class="tag '+it.k+'">'+(it.k==='need'?'Am nevoie':'Ofer')+'</span><h3>'+esc(it.t)+'</h3><p>'+esc(it.d)+'</p><div class="meta">'+esc(it.p)+'</div><button class="btn sm" data-i="'+i+'">'+(it.k==='need'?'Vreau să ajut':'Vreau acest ajutor')+'</button>'+(admin?'<button class="btn sm del" data-del="'+i+'">Șterge postarea</button>':'');
+    board.appendChild(c);
+  });
+  document.getElementById('sNeeds').textContent=n;
+  document.getElementById('sOffers').textContent=o;
+}
+document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){
+  filter=b.dataset.f;
+  document.querySelectorAll('.tab').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+  render();
+})});
+board.addEventListener('click',function(e){
+  var b=e.target.closest('button[data-i]');if(!b)return;
+  b.textContent='Mulțumim! Te contactăm.';b.disabled=true;
+});
+document.getElementById('f').addEventListener('submit',function(e){
+  e.preventDefault();
+  items.unshift({k:document.getElementById('kind').value,t:document.getElementById('title').value.trim(),d:document.getElementById('desc').value.trim()||'Fără detalii suplimentare.',p:document.getElementById('place').value.trim()});
+  this.reset();filter='all';
+  document.querySelectorAll('.tab').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.f==='all'?'true':'false')});
+  render();
+  document.getElementById('msg').textContent='Postarea a fost publicată pe panou.';
+  document.getElementById('panou').scrollIntoView();
+});
+var admin=false,HASH='c0310a507597e117fa73b30e6a579d53fdfab2b1bee9feaf185f4f6aabcd6222';
+var stories=[
+{t:'O masă caldă care a devenit o familie',x:'Au venit prima dată șase vecini. Acum gătim pentru patruzeci de oameni, iar cei serviți ajută la spălat vasele.',a:'Elena, voluntară'},
+{t:'Ghiozdanul din clasa a treia',x:'Un băiat a primit ghiozdan și penar chiar în ziua în care începuse să se rușineze de rucsacul rupt.',a:'Domnul Radu, învățător'},
+{t:'Cumpărături la ușă',x:'Din cumpărături duse săptămânal a ieșit o prietenie. Acum doamna Maria ne învață rețete.',a:'Andrei, 19 ani'}
+];
+function renderStories(){
+  var s=document.getElementById('stories');s.innerHTML='';
+  stories.forEach(function(st){var d=document.createElement('article');d.className='story';d.innerHTML='<h3 style="margin:0;font-size:20px">'+esc(st.t)+'</h3><blockquote>„'+esc(st.x)+'”</blockquote><cite>'+esc(st.a)+'</cite>';s.appendChild(d)});
+  var l=document.getElementById('stList');l.innerHTML='';
+  stories.forEach(function(st,i){var li=document.createElement('li');li.innerHTML='<span>'+esc(st.t)+'</span><button class="btn sm del" data-sd="'+i+'">Șterge</button>';l.appendChild(li)});
+}
+function sha(s){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('')})}
+var dlg=document.getElementById('login');
+document.getElementById('adminBtn').addEventListener('click',function(){
+  if(admin){document.getElementById('admin').scrollIntoView();return}
+  document.getElementById('lerr').textContent='';dlg.showModal();
+});
+document.getElementById('lcancel').addEventListener('click',function(){dlg.close()});
+document.getElementById('lf').addEventListener('submit',function(e){
+  e.preventDefault();
+  var u=document.getElementById('lu').value.trim().toLowerCase(),p=document.getElementById('lp').value;
+  sha(u+':'+p).then(function(h){
+    if(h===HASH){admin=true;dlg.close();document.getElementById('lf').reset();document.getElementById('admin').hidden=false;document.getElementById('adminBtn').textContent='Panou administrator';render();document.getElementById('admin').scrollIntoView()}
+    else{document.getElementById('lerr').textContent='Email sau parolă incorecte.'}
+  }).catch(function(){document.getElementById('lerr').textContent='Autentificarea nu este disponibilă în acest browser.'});
+});
+document.getElementById('logout').addEventListener('click',function(){admin=false;document.getElementById('admin').hidden=true;document.getElementById('adminBtn').textContent='Administrator';render();window.scrollTo(0,0)});
+board.addEventListener('click',function(e){var b=e.target.closest('button[data-del]');if(!b||!admin)return;items.splice(+b.dataset.del,1);render()});
+document.getElementById('stList').addEventListener('click',function(e){var b=e.target.closest('button[data-sd]');if(!b||!admin)return;stories.splice(+b.dataset.sd,1);renderStories()});
+document.getElementById('sf').addEventListener('submit',function(e){e.preventDefault();if(!admin)return;stories.unshift({t:document.getElementById('stTitle').value.trim(),x:document.getElementById('stText').value.trim(),a:document.getElementById('stAuthor').value.trim()});this.reset();renderStories()});
+render();renderStories();
+</script>
+</body>
+</html>
