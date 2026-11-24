@@ -1,5 +1,7 @@
 
 const ITERATIONS = 310000;
+const TOKEN_EXPIRY_HOURS = 24;
+const SITE_URL = "https://com-unity.pages.dev";
 
 function toBase64(bytes) {
   let binary = "";
@@ -7,6 +9,22 @@ function toBase64(bytes) {
     binary += String.fromCharCode(byte);
   }
   return btoa(binary);
+}
+
+function toHex(bytes) {
+  return Array.from(bytes)
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function escapeHtml(value) {
+  return value.replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
 }
 
 async function hashPassword(password) {
@@ -34,10 +52,64 @@ async function hashPassword(password) {
   return `pbkdf2$${ITERATIONS}$${toBase64(salt)}$${toBase64(new Uint8Array(bits))}`;
 }
 
+async function hashToken(token) {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(token)
+  );
+
+  return toHex(new Uint8Array(digest));
+}
+
+async function sendVerificationEmail(email, displayName, token, apiKey) {
+  const verificationUrl =
+    `${SITE_URL}/verify-email.html?token=${encodeURIComponent(token)}`;
+
+  const safeName = escapeHtml(displayName);
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: "COM-Unity <onboarding@resend.dev>",
+      to: [email],
+      subject: "Confirmă adresa de email — COM-Unity",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#253044;padding:24px">
+          <h1 style="color:#2457a6">Bun venit în COM-Unity!</h1>
+          <p>Salut, ${safeName}!</p>
+          <p>Îți mulțumim că te-ai alăturat comunității COM-Unity.</p>
+          <p>Pentru activarea contului, confirmă adresa de email apăsând butonul de mai jos:</p>
+          <p style="margin:32px 0">
+            <a href="${verificationUrl}"
+               style="background:#2457a6;color:white;padding:14px 24px;text-decoration:none;border-radius:8px;display:inline-block">
+              Confirmă adresa de email
+            </a>
+          </p>
+          <p>Linkul expiră în 24 de ore.</p>
+          <p>Dacă nu ai solicitat crearea unui cont, poți ignora acest mesaj.</p>
+          <hr style="border:0;border-top:1px solid #ddd;margin:28px 0">
+          <p style="font-size:12px;color:#777">COM-Unity — Comunitate, solidaritate și ajutor reciproc.</p>
+        </div>
+      `,
+      text: `Salut, ${displayName}! Pentru confirmarea contului COM-Unity accesează: ${verificationUrl}. Linkul expiră în 24 de ore.`
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error("Email delivery failed");
+  }
+
+  return await response.json();
+}
+
 export async function onRequestPost({ request, env }) {
-  if (!env.DB) {
+  if (!env.DB || !env.RESEND_API_KEY) {
     return Response.json(
-      { error: "Database unavailable" },
+      { error: "Registration service unavailable." },
       { status: 503 }
     );
   }
@@ -56,7 +128,6 @@ export async function onRequestPost({ request, env }) {
     const displayName = String(body.displayName || "").trim();
     const password = String(body.password || "");
 
-    // Honeypot anti-spam
     if (body.website) {
       return Response.json({ ok: true });
     }
@@ -66,27 +137,35 @@ export async function onRequestPost({ request, env }) {
       email.length > 254
     ) {
       return Response.json(
-        { error: "Invalid email address" },
+        { error: "Invalid email address." },
         { status: 400 }
       );
     }
 
     if (displayName.length < 2 || displayName.length > 80) {
       return Response.json(
-        { error: "Name must contain 2-80 characters" },
+        { error: "Name must contain 2-80 characters." },
         { status: 400 }
       );
     }
 
     if (password.length < 12 || password.length > 128) {
       return Response.json(
-        { error: "Password must contain 12-128 characters" },
+        { error: "Password must contain 12-128 characters." },
         { status: 400 }
       );
     }
 
-    const passwordHash = await hashPassword(password);
     const id = crypto.randomUUID();
+    const passwordHash = await hashPassword(password);
+
+    const tokenBytes = crypto.getRandomValues(new Uint8Array(32));
+    const token = toHex(tokenBytes);
+    const tokenHash = await hashToken(token);
+
+    const expiresAt = new Date(
+      Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000
+    ).toISOString();
 
     await env.DB.prepare(`
       INSERT INTO users (
@@ -105,11 +184,52 @@ export async function onRequestPost({ request, env }) {
       displayName
     ).run();
 
+    try {
+      await env.DB.prepare(`
+        INSERT INTO email_verification_tokens (
+          id,
+          user_id,
+          token_hash,
+          expires_at
+        )
+        VALUES (?, ?, ?, ?)
+      `).bind(
+        crypto.randomUUID(),
+        id,
+        tokenHash,
+        expiresAt
+      ).run();
+
+      await sendVerificationEmail(
+        email,
+        displayName,
+        token,
+        env.RESEND_API_KEY
+      );
+
+    } catch (error) {
+      await env.DB.batch([
+        env.DB.prepare(`
+          DELETE FROM email_verification_tokens
+          WHERE user_id = ?
+            AND token_hash = ?
+        `).bind(id, tokenHash),
+
+        env.DB.prepare(`
+          DELETE FROM users
+          WHERE id = ?
+            AND verified = 0
+        `).bind(id)
+      ]);
+
+      throw error;
+    }
+
     return Response.json(
       {
         ok: true,
         status: "pending_verification",
-        message: "Account created. Email verification is not yet enabled."
+        message: "Account created. Check your email to verify your account."
       },
       {
         status: 201,
@@ -128,8 +248,13 @@ export async function onRequestPost({ request, env }) {
     }
 
     return Response.json(
-      { error: "Registration failed." },
-      { status: 500 }
+      { error: "Registration failed. Please try again later." },
+      {
+        status: 500,
+        headers: {
+          "Cache-Control": "no-store"
+        }
+      }
     );
   }
 }
