@@ -436,6 +436,64 @@ document.getElementById('registerForm').addEventListener('submit',async function
 render();
 renderStories();
   
+(async function checkUserSession(){
+  try{
+    const response=await fetch('/api/auth/me',{
+      method:'GET',
+      cache:'no-store',
+      credentials:'same-origin'
+    });
+
+    if(!response.ok) return;
+
+    const result=await response.json();
+
+    if(!result.authenticated || !result.user) return;
+
+    const loginBtn=document.getElementById('userLoginBtn');
+    const registerBtn=document.getElementById('userRegisterBtn');
+
+    loginBtn.hidden=true;
+    registerBtn.hidden=true;
+
+    const nav=document.querySelector('nav[aria-label="Principal"]');
+
+    const account=document.createElement('span');
+    account.id='userAccountName';
+    account.className='navbtn';
+    account.textContent='Salut, '+result.user.displayName;
+
+    const logoutBtn=document.createElement('button');
+    logoutBtn.type='button';
+    logoutBtn.id='userLogoutBtn';
+    logoutBtn.className='navbtn';
+    logoutBtn.textContent='Deconectare';
+
+    logoutBtn.addEventListener('click',async function(){
+      try{
+        const response=await fetch('/api/auth/logout',{
+          method:'POST',
+          credentials:'same-origin'
+        });
+
+        if(response.ok){
+          location.reload();
+        }else{
+          alert('Deconectarea nu a reușit.');
+        }
+      }catch(error){
+        alert('Nu s-a putut contacta serverul.');
+      }
+    });
+
+    nav.appendChild(account);
+    nav.appendChild(logoutBtn);
+
+  }catch(error){
+    console.error('Verificarea sesiunii a eșuat.');
+  }
+})();
+  
 document.getElementById('userLoginBtn').addEventListener('click',function(){
   document.getElementById('userLoginDialog').showModal();
 });
