@@ -238,6 +238,11 @@ function App() {
           <Globe2 /> COM-<strong>Unity</strong>
         </a>
         <span>© 2026 COM-Unity. Împreună putem mai mult.</span>
+        <nav className="legal-links" aria-label="Documente legale">
+          <a href="/confidentialitate.html">Confidențialitate</a>
+          <a href="/termeni.html">Termeni și condiții</a>
+          <a href="/cookies.html">Cookie-uri</a>
+        </nav>
       </footer>
 
       </>}
