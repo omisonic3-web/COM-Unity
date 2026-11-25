@@ -977,3 +977,38 @@ footer .brand {
 
 /* Unread message indicators */
 .message-unread-badge{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 6px;margin-left:auto;border-radius:999px;background:#e45d78;color:#fff;font-size:10px;font-weight:800;line-height:1;box-shadow:0 0 14px #e45d7855}
+
+
+/* Refined help-request conversation composer */
+.request-responses{margin-top:4px;padding:20px;border:1px solid var(--border,rgba(255,255,255,.1));border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018));display:flex;flex-direction:column;gap:16px}
+.request-conversation-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.request-conversation-kicker{display:block;margin-bottom:4px;color:#7dd3fc;font-size:10px;font-weight:800;letter-spacing:.14em}
+.request-conversation-heading h3{margin:0;font-size:16px;font-weight:700}
+.request-message-count{padding:5px 9px;border:1px solid var(--border,rgba(255,255,255,.1));border-radius:999px;color:var(--muted,#9ca3af);font-size:11px;white-space:nowrap}
+.request-chat-history{display:flex;flex-direction:column;gap:13px;max-height:380px;overflow-y:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.request-chat-row{display:flex;align-items:flex-end;gap:9px;max-width:88%}
+.request-chat-row.mine{align-self:flex-end;flex-direction:row-reverse}
+.request-chat-row.theirs{align-self:flex-start}
+.request-chat-avatar{flex:0 0 30px;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:rgba(125,211,252,.14);color:#7dd3fc;font-size:12px;font-weight:800}
+.request-chat-row.mine .request-chat-avatar{background:rgba(99,102,241,.2);color:#c4b5fd}
+.request-chat-bubble{min-width:0;padding:10px 13px;border:1px solid var(--border,rgba(255,255,255,.09));border-radius:15px 15px 15px 4px;background:rgba(255,255,255,.045)}
+.request-chat-row.mine .request-chat-bubble{border-color:rgba(99,102,241,.25);border-radius:15px 15px 4px 15px;background:rgba(99,102,241,.13)}
+.request-chat-author{margin-bottom:4px;color:#7dd3fc;font-size:11px;font-weight:750}
+.request-chat-row.mine .request-chat-author{color:#c4b5fd}
+.request-chat-bubble p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;font-size:13px}
+.request-chat-bubble time{display:block;margin-top:7px;color:var(--muted,#9ca3af);font-size:10px;text-align:right}
+.request-chat-empty{padding:22px 12px;text-align:center;color:var(--muted,#9ca3af)}
+.request-chat-empty>span{font-size:25px}
+.request-chat-empty strong{display:block;margin-top:7px;color:inherit;font-size:13px}
+.request-chat-empty p{margin:5px 0 0;font-size:12px}
+.request-chat-composer{padding:10px;border:1px solid rgba(125,211,252,.22);border-radius:16px;background:rgba(15,23,42,.42);box-shadow:0 8px 26px rgba(0,0,0,.12)}
+.request-chat-composer:focus-within{border-color:rgba(125,211,252,.58);box-shadow:0 0 0 3px rgba(56,189,248,.08),0 8px 26px rgba(0,0,0,.14)}
+.request-chat-composer textarea{display:block;width:100%;min-height:42px;max-height:120px;resize:vertical;border:0;outline:0;background:transparent;color:inherit;font:inherit;font-size:13px;line-height:1.5;padding:7px 8px}
+.request-chat-composer textarea::placeholder{color:var(--muted,#9ca3af)}
+.request-chat-composer-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 2px 0 8px}
+.request-chat-composer-footer>span{color:var(--muted,#9ca3af);font-size:10px}
+.request-chat-composer-footer button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 14px;border:0;border-radius:10px;background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:transform .15s ease,opacity .15s ease,box-shadow .15s ease}
+.request-chat-composer-footer button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 16px rgba(59,130,246,.28)}
+.request-chat-composer-footer button:disabled{opacity:.42;cursor:not-allowed}
+.request-chat-closed{margin:0;padding:11px 13px;border-radius:10px;background:rgba(255,255,255,.04);color:var(--muted,#9ca3af);font-size:12px}
+@media(max-width:600px){.request-responses{padding:14px}.request-chat-row{max-width:96%}.request-chat-composer-footer button{min-height:38px}}
