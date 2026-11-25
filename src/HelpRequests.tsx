@@ -76,15 +76,44 @@ function HelpRequests({ userId }: { userId: string }) {
     } catch (e) { setError(e instanceof Error ? e.message : "Eroare."); }
   }
 
-  async function toggleResponses(item: HelpRequest) {
+  useEffect(() => {
+    if (!expandedRequest) return;
+    let active = true;
+    let refreshing = false;
+
+    const refreshConversation = async () => {
+      if (refreshing) return;
+      refreshing = true;
+      try {
+        const response = await fetch(`/api/requests/${encodeURIComponent(expandedRequest)}/responses`, {
+          credentials: "same-origin",
+          cache: "no-store"
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (active) {
+          setResponses(current => ({ ...current, [expandedRequest]: data.responses || [] }));
+        }
+      } catch {
+        // O eroare temporară de rețea nu întrerupe conversația; următoarea actualizare va reîncerca.
+      } finally {
+        refreshing = false;
+      }
+    };
+
+    void refreshConversation();
+    const intervalId = window.setInterval(() => void refreshConversation(), 5000);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, [expandedRequest]);
+
+  function toggleResponses(item: HelpRequest) {
     if (expandedRequest === item.id) { setExpandedRequest(null); return; }
-    setExpandedRequest(item.id); setResponseDraft(""); setError("");
-    try {
-      const response = await fetch(`/api/requests/${encodeURIComponent(item.id)}/responses`, { credentials: "same-origin", cache: "no-store" });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Nu am putut încărca răspunsurile.");
-      setResponses(current => ({ ...current, [item.id]: data.responses || [] }));
-    } catch (e) { setError(e instanceof Error ? e.message : "Eroare la încărcarea răspunsurilor."); }
+    setExpandedRequest(item.id);
+    setResponseDraft("");
+    setError("");
   }
 
   async function sendResponse(item: HelpRequest, event: FormEvent<HTMLFormElement>) {
