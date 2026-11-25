@@ -34,11 +34,12 @@ export async function onRequestDelete({ request, env }) {
   if (auth.error) return json({ error: auth.error }, auth.status);
   const id = projectId(request);
   try {
+    const owned = await env.DB.prepare(
+      "SELECT id FROM projects WHERE id = ? AND user_id = ?"
+    ).bind(id, auth.user.id).first();
+    if (!owned) return json({ error: "Proiectul nu există sau nu îți aparține." }, 404);
     await env.DB.prepare("DELETE FROM project_members WHERE project_id = ?").bind(id).run();
-    const result = await env.DB.prepare(
-      "DELETE FROM projects WHERE id = ? AND user_id = ?"
-    ).bind(id, auth.user.id).run();
-    if (!result.meta?.changes) return json({ error: "Proiectul nu există sau nu îți aparține." }, 404);
+    await env.DB.prepare("DELETE FROM projects WHERE id = ? AND user_id = ?").bind(id, auth.user.id).run();
     return json({ ok: true });
   } catch (error) {
     console.error("COM-Unity project delete failed:", error);
