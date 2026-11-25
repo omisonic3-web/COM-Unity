@@ -5,7 +5,7 @@ const defaults = {
   intro: "COM-Unity este un spațiu digital dedicat oamenilor care cred în puterea colaborării și a solidarității.",
   mission: "Să conectăm oamenii care au nevoie de sprijin cu cei care pot oferi ajutor, timp, experiență sau resurse.",
   vision: "O comunitate în care implicarea, încrederea și cooperarea transformă inițiativele individuale în schimbări pozitive.",
-  values: "Solidaritate • Respect • Încredere • Implicare • Cooperare",
+  values_text: "Solidaritate • Respect • Încredere • Implicare • Cooperare",
   contact_email: "",
   contact_location: ""
 };
@@ -50,12 +50,12 @@ export async function onRequestPatch({ request, env }) {
   let body;
   try { body = await request.json(); } catch { return json({ error: "Date JSON invalide." }, 400); }
   const fields = {};
-  for (const key of ["title","intro","mission","vision","values","contact_email","contact_location"]) {
+  for (const key of ["title","intro","mission","vision","values_text","contact_email","contact_location"]) {
     fields[key] = typeof body[key] === "string" ? body[key].trim() : "";
   }
   if (fields.title.length < 2 || fields.title.length > 100) return json({ error: "Titlul trebuie să aibă între 2 și 100 de caractere." }, 400);
   if (fields.intro.length < 10 || fields.intro.length > 1200) return json({ error: "Prezentarea trebuie să aibă între 10 și 1.200 de caractere." }, 400);
-  for (const key of ["mission","vision","values"]) {
+  for (const key of ["mission","vision","values_text"]) {
     if (fields[key].length > 1200) return json({ error: "Fiecare secțiune poate avea maximum 1.200 de caractere." }, 400);
   }
   if (fields.contact_email.length > 160 || (fields.contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.contact_email))) {
@@ -65,7 +65,7 @@ export async function onRequestPatch({ request, env }) {
   try {
     await ensureAbout(env);
     await env.DB.prepare(`UPDATE about_content SET title=?,intro=?,mission=?,vision=?,values=?,contact_email=?,contact_location=?,updated_at=CURRENT_TIMESTAMP WHERE id=1`)
-      .bind(fields.title,fields.intro,fields.mission,fields.vision,fields.values,fields.contact_email,fields.contact_location).run();
+      .bind(fields.title,fields.intro,fields.mission,fields.vision,fields.values_text,fields.contact_email,fields.contact_location).run();
     return json({ ok: true });
   } catch (error) {
     console.error("Admin about content update failed:", error);
