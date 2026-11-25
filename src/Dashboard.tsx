@@ -199,7 +199,7 @@ function Dashboard({ user, onLogout, loading }: Props) {
                 <Bell size={19} />
                 {activityUnreadCount > 0 && <span className="message-unread-badge" style={{ position: "absolute", top: -2, right: -3 }}>{activityUnreadCount > 99 ? "99+" : activityUnreadCount}</span>}
               </button>
-              {notificationsOpen && <div role="dialog" aria-label="Notificări" style={{ position: "absolute", zIndex: 1100, top: 42, right: 0, width: "min(370px, calc(100vw - 32px))", maxHeight: 430, overflowY: "auto", padding: 12, border: "1px solid #34445c", borderRadius: 16, background: "#111d2d", color: "#edf4ff", boxShadow: "0 18px 50px #0009" }}>
+              {notificationsOpen && <div role="dialog" aria-label="Notificări" style={{ position: "fixed", zIndex: 99999, top: 76, right: 24, width: "min(370px, calc(100vw - 32px))", maxHeight: "min(430px, calc(100vh - 96px))", overflowY: "auto", padding: 12, border: "1px solid #34445c", borderRadius: 16, background: "#111d2d", color: "#edf4ff", boxShadow: "0 18px 50px #0009" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 6px 12px" }}>
                   <strong>Notificări</strong>
                   <button type="button" onClick={() => setNotificationsOpen(false)} aria-label="Închide notificările" style={{ border: 0, background: "transparent", color: "#aebed2", cursor: "pointer", fontSize: 20 }}>×</button>
