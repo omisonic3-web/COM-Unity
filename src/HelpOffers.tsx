@@ -3,7 +3,7 @@ import { Plus, RefreshCw, MapPin, CalendarDays, Trash2, CheckCircle2, Circle, X,
 
 type HelpOffer = {
   id: string; user_id: string; title: string; description: string; category: string;
-  location: string | null; status: "active" | "inactive"; created_at: string; author_name: string;
+  location: string | null; status: "active" | "closed"; created_at: string; author_name: string;
 };
 
 const categories = ["Comunitate", "Educație", "Sănătate", "Alimente și bunuri", "Transport", "Locuință", "Tehnologie", "Reparații și servicii", "Altele"];
@@ -50,7 +50,7 @@ function HelpOffers({ userId }: { userId: string }) {
   }
 
   async function updateStatus(item: HelpOffer) {
-    const status = item.status === "active" ? "inactive" : "active";
+    const status = item.status === "active" ? "closed" : "active";
     try {
       const response = await fetch(`/api/offers/${encodeURIComponent(item.id)}`, {
         method: "PATCH", credentials: "same-origin",
