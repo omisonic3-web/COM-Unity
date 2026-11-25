@@ -1521,3 +1521,10 @@ footer .brand {
 .dashboard-layout[data-theme="light"] .leaderboard-tabs button{color:#34415a;background:#f7f9fd;border-color:#d7dfed}
 .dashboard-layout[data-theme="light"] .leaderboard-tabs button.selected{color:#344fb5;background:#e9edff;border-color:#aebdf0}
 @media(max-width:520px){.leaderboard-intro{align-items:flex-start;padding:13px;gap:10px}.leaderboard-intro-icon{width:39px;height:39px}.leaderboard-card{gap:9px;padding:11px}.leaderboard-avatar{width:36px;height:36px}.leaderboard-score strong{font-size:15px}}
+
+
+/* Linkuri către documentele legale */
+.legal-links { display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+.legal-links a { color:#83dff0; text-decoration:underline; text-underline-offset:3px; }
+.legal-links a:hover { color:#c5f5ff; }
+@media (max-width:600px) { footer, .dashboard-footer { flex-wrap:wrap; align-items:flex-start; } .legal-links { gap:10px 14px; } }
