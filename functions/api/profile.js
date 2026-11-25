@@ -15,7 +15,12 @@ export async function onRequestGet({ request, env }) {
     const row = await env.DB.prepare("SELECT avatar_id FROM user_profiles WHERE user_id = ?").bind(auth.user.id).first();
     let reputation = { average: 0, count: 0 };
     try { reputation = await env.DB.prepare("SELECT ROUND(AVG(rating), 1) AS average, COUNT(*) AS count FROM project_ratings WHERE reviewee_id = ?").bind(auth.user.id).first() || reputation; } catch { /* tabela apare la prima accesare a evaluărilor */ }
-    return json({ ok: true, user: { avatarId: row?.avatar_id || "person-1", ratingAverage: reputation.average || 0, ratingCount: reputation.count || 0 } }, 200);
+    let completedProjects = 0;
+    try {
+      const completed = await env.DB.prepare("SELECT COUNT(DISTINCT p.id) AS count FROM projects p LEFT JOIN project_members pm ON pm.project_id = p.id WHERE p.status = 'completed' AND (p.user_id = ? OR pm.user_id = ?)").bind(auth.user.id, auth.user.id).first();
+      completedProjects = Number(completed?.count || 0);
+    } catch { /* statistică suplimentară: profilul rămâne disponibil dacă schema diferă */ }
+    return json({ ok: true, user: { avatarId: row?.avatar_id || "person-1", ratingAverage: reputation.average || 0, ratingCount: reputation.count || 0, completedProjects } }, 200);
   } catch (error) {
     console.error("COM-Unity profile read failed:", error);
     return json({ error: "Profilul nu a putut fi încărcat." }, 500);
