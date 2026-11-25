@@ -31,7 +31,7 @@ export async function onRequestPatch({ request, env }) {
   const hasName = Object.prototype.hasOwnProperty.call(body || {}, "displayName");
   const hasAvatar = Object.prototype.hasOwnProperty.call(body || {}, "avatarId");
   if (!hasName && !hasAvatar) return json({ error: "Nu există modificări de salvat." }, 400);
-  const displayName = hasName && typeof body.displayName === "string" ? body.displayName.trim().replace(/\\s+/g, " ") : "";
+  const displayName = hasName && typeof body.displayName === "string" ? body.displayName.trim().replace(/\s+/g, " ") : "";
   if (hasName && (displayName.length < 2 || displayName.length > 80)) return json({ error: "Numele trebuie să aibă între 2 și 80 de caractere." }, 400);
   if (hasAvatar && (typeof body.avatarId !== "string" || !AVATAR_IDS.has(body.avatarId))) return json({ error: "Avatar invalid." }, 400);
 
