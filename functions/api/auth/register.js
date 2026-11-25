@@ -106,6 +106,8 @@ async function sendVerificationEmail(email, displayName, token, apiKey, siteUrl)
 }
 
 export async function onRequestPost({ request, env }) {
+  let stage = "environment_check";
+
   if (!env.DB || !env.RESEND_API_KEY) {
     return Response.json(
       { error: "Registration service unavailable." },
@@ -114,6 +116,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
+    stage = "parse_request";
     if (!request.headers.get("content-type")?.includes("application/json")) {
       return Response.json(
         { error: "Content-Type must be application/json" },
@@ -155,6 +158,7 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
+    stage = "hash_password";
     const id = crypto.randomUUID();
     const passwordHash = await hashPassword(password);
 
@@ -166,6 +170,7 @@ export async function onRequestPost({ request, env }) {
       Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000
     ).toISOString();
 
+    stage = "insert_user";
     await env.DB.prepare(`
       INSERT INTO users (
         id,
@@ -184,6 +189,7 @@ export async function onRequestPost({ request, env }) {
     ).run();
 
     try {
+      stage = "insert_verification_token";
       await env.DB.prepare(`
         INSERT INTO email_verification_tokens (
           id,
@@ -199,6 +205,7 @@ export async function onRequestPost({ request, env }) {
         expiresAt
       ).run();
 
+      stage = "send_verification_email";
       await sendVerificationEmail(
         email,
         displayName,
@@ -208,6 +215,8 @@ export async function onRequestPost({ request, env }) {
       );
 
     } catch (error) {
+      console.error("COM-Unity registration failure during token/email step:", stage, error?.name || "Error", error?.message || "Unknown error");
+      stage = "rollback_registration";
       await env.DB.batch([
         env.DB.prepare(`
           DELETE FROM email_verification_tokens
@@ -240,6 +249,7 @@ export async function onRequestPost({ request, env }) {
     );
 
   } catch (error) {
+    console.error("COM-Unity registration request failed:", stage, error?.name || "Error", error?.message || "Unknown error");
     if (error.message?.includes("UNIQUE constraint failed")) {
       return Response.json(
         { error: "An account with this email already exists." },
