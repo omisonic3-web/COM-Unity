@@ -220,6 +220,58 @@ dialog form{box-shadow:none;border:0}
   </form>
 </dialog>
 
+<dialog id="registerDialog" aria-labelledby="registerTitle">
+  <form id="registerForm">
+    <h3 id="registerTitle" style="margin:0;font-size:26px">
+      Creează cont COM-Unity
+    </h3>
+
+    <label>
+      Nume afișat
+      <input id="regName" name="displayName" type="text"
+        required minlength="2" maxlength="80" autocomplete="name">
+    </label>
+
+    <label>
+      Email
+      <input id="regEmail" name="email" type="email"
+        required autocomplete="email">
+    </label>
+
+    <label>
+      Parolă
+      <input id="regPassword" name="password" type="password"
+        required minlength="12" maxlength="128"
+        autocomplete="new-password">
+    </label>
+
+    <label>
+      Confirmă parola
+      <input id="regConfirm" type="password"
+        required minlength="12" maxlength="128"
+        autocomplete="new-password">
+    </label>
+
+    <label style="display:none">
+      Website
+      <input name="website" type="text" tabindex="-1" autocomplete="off">
+    </label>
+
+    <label>
+      <input id="regTerms" type="checkbox" required>
+      Accept termenii și condițiile platformei.
+    </label>
+
+    <div class="err" id="registerError" role="alert"></div>
+
+    <div class="row">
+      <button class="btn" type="submit">Creează cont</button>
+      <button class="btn sm" type="button"
+        id="registerCancel">Anulează</button>
+    </div>
+  </form>
+</dialog>
+
 <footer><div class="wrap"><a class="logo" href="#top">COM<i style="color:var(--gold);font-style:normal">-</i>Unity</a><br>Un spațiu de ajutor reciproc. Postările de mai sus sunt exemple de demonstrație; postările noi nu se salvează după închiderea paginii.</div></footer>
 
 <script>
