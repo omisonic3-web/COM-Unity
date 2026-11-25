@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Star, Send, Users, MessageSquare } from "lucide-react";
 
 type Participant = { id: string; name: string; role: string };
@@ -41,7 +41,7 @@ function ProjectRatings({ projectId }: { projectId: string }) {
 
   useEffect(() => { if (open) void load(); }, [open, projectId]);
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
     setSaving(selected); setError(""); setSuccess("");
