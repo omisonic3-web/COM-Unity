@@ -107,6 +107,8 @@ async function sendVerificationEmail(email, displayName, token, apiKey, siteUrl)
 
 export async function onRequestPost({ request, env }) {
   let stage = "environment_check";
+  let failureStage = null;
+  const isPreview = new URL(request.url).hostname.endsWith(".com-unity.pages.dev");
 
   if (!env.DB || !env.RESEND_API_KEY) {
     return Response.json(
@@ -215,6 +217,7 @@ export async function onRequestPost({ request, env }) {
       );
 
     } catch (error) {
+      failureStage = stage;
       console.error("COM-Unity registration failure during token/email step:", stage, error?.name || "Error", error?.message || "Unknown error");
       stage = "rollback_registration";
       await env.DB.batch([
@@ -249,7 +252,8 @@ export async function onRequestPost({ request, env }) {
     );
 
   } catch (error) {
-    console.error("COM-Unity registration request failed:", stage, error?.name || "Error", error?.message || "Unknown error");
+    const diagnosticStage = failureStage || stage;
+    console.error("COM-Unity registration request failed:", diagnosticStage, error?.name || "Error", error?.message || "Unknown error");
     if (error.message?.includes("UNIQUE constraint failed")) {
       return Response.json(
         { error: "An account with this email already exists." },
@@ -258,7 +262,10 @@ export async function onRequestPost({ request, env }) {
     }
 
     return Response.json(
-      { error: "Registration failed. Please try again later." },
+      {
+        error: "Registration failed. Please try again later.",
+        ...(isPreview ? { diagnostic: diagnosticStage } : {})
+      },
       {
         status: 500,
         headers: {
