@@ -42,11 +42,16 @@ const sectionCopy: Record<Section, { title: string; description: string }> = {
   profile: { title: 'Profilul meu', description: 'Informațiile contului tău COM-Unity.' }
 };
 
+type ActivityNotification = {
+  id: string; title: string; message: string; actor_name: string;
+  entity_type: string | null; entity_id: string | null; read_at: string | null; created_at: string;
+};
+
 function Dashboard({ user, onLogout, loading }: Props) {
   const [activeSection, setActiveSection] = useState<Section>('overview');
   const [unreadCount, setUnreadCount] = useState(0);
   const [messageNotice, setMessageNotice] = useState<{ sender: string; message: string } | null>(null);
-  const [activityUnreadCount, setActivityUnreadCount] = useState(0);
+  const [activityUnreadCount, setActivityUnreadCount] = useState(0);\n  const [notifications, setNotifications] = useState<ActivityNotification[]>([]);\n  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [activityNotice, setActivityNotice] = useState<{ id: string; title: string; message: string; actor: string; entityType: string | null } | null>(null);
   const latestActivityId = useRef<string | null>(null);
   const activityNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -75,7 +80,7 @@ function Dashboard({ user, onLogout, loading }: Props) {
       const response = await fetch('/api/notifications', { credentials: 'same-origin', cache: 'no-store' });
       if (!response.ok) return;
       const data = await response.json();
-      setActivityUnreadCount(data.unread_count || 0);
+      setActivityUnreadCount(data.unread_count || 0);\n      setNotifications(data.notifications || []);
       const latest = (data.notifications || []).find((item: { read_at: string | null }) => !item.read_at);
       if (latest?.id) {
         if (latestActivityId.current && latestActivityId.current !== latest.id && notify) {
@@ -93,6 +98,21 @@ function Dashboard({ user, onLogout, loading }: Props) {
       } else latestActivityId.current = null;
     } catch { /* notificările nu blochează dashboard-ul */ }
   }, []);
+  const openNotification = useCallback(async (notification: ActivityNotification) => {
+    if (!notification.read_at) {
+      try {
+        await fetch('/api/notifications', {
+          method: 'PATCH',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: notification.id })
+        });
+      } catch { /* se sincronizează la următoarea încărcare */ }
+    }
+    setNotificationsOpen(false);
+    setActiveSection(notification.entity_type === 'project' ? 'projects' : 'overview');
+    await refreshNotifications(false);
+  }, [refreshNotifications]);
   const openActivityNotice = useCallback(async () => {
     if (!activityNotice) return;
     try {
@@ -171,10 +191,29 @@ function Dashboard({ user, onLogout, loading }: Props) {
         <header className="dashboard-topbar">
           <div className="dashboard-breadcrumb"><span>COM-Unity</span><ChevronRight size={14} /><strong>{activeCopy.title}</strong></div>
           <div className="dashboard-account">
-            <button type="button" aria-label={activityUnreadCount ? `${activityUnreadCount} notificări necitite` : "Notificări"} onClick={() => { void refreshNotifications(false); }} style={{ position: "relative", border: 0, background: "transparent", color: "inherit", cursor: "pointer", padding: 8 }}>
-              <Bell size={19} />
-              {activityUnreadCount > 0 && <span className="message-unread-badge" style={{ position: "absolute", top: -2, right: -3 }}>{activityUnreadCount > 99 ? "99+" : activityUnreadCount}</span>}
-            </button>
+            <div style={{ position: "relative" }}>
+              <button type="button" aria-label={activityUnreadCount ? `${activityUnreadCount} notificări necitite` : "Notificări"} aria-expanded={notificationsOpen} onClick={() => { setNotificationsOpen(open => !open); void refreshNotifications(false); }} style={{ position: "relative", border: 0, background: "transparent", color: "inherit", cursor: "pointer", padding: 8 }}>
+                <Bell size={19} />
+                {activityUnreadCount > 0 && <span className="message-unread-badge" style={{ position: "absolute", top: -2, right: -3 }}>{activityUnreadCount > 99 ? "99+" : activityUnreadCount}</span>}
+              </button>
+              {notificationsOpen && <div role="dialog" aria-label="Notificări" style={{ position: "absolute", zIndex: 1100, top: 42, right: 0, width: "min(370px, calc(100vw - 32px))", maxHeight: 430, overflowY: "auto", padding: 12, border: "1px solid #34445c", borderRadius: 16, background: "#111d2d", color: "#edf4ff", boxShadow: "0 18px 50px #0009" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 6px 12px" }}>
+                  <strong>Notificări</strong>
+                  <button type="button" onClick={() => setNotificationsOpen(false)} aria-label="Închide notificările" style={{ border: 0, background: "transparent", color: "#aebed2", cursor: "pointer", fontSize: 20 }}>×</button>
+                </div>
+                {notifications.length === 0 ? <p style={{ margin: 8, color: "#aebed2", fontSize: 13 }}>Nu ai notificări momentan.</p> : notifications.map(notification => (
+                  <button key={notification.id} type="button" onClick={() => void openNotification(notification)} style={{ display: "block", width: "100%", textAlign: "left", padding: 12, marginBottom: 7, border: "1px solid #34445c", borderRadius: 11, background: notification.read_at ? "#172538" : "#202f49", color: "inherit", cursor: "pointer" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 7, fontWeight: 700, fontSize: 13 }}>
+                      {!notification.read_at && <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#8b7cff", flex: "0 0 auto" }} />}
+                      {notification.title}
+                    </span>
+                    <span style={{ display: "block", marginTop: 6, color: "#c2cee0", fontSize: 12 }}>{notification.actor_name}: {notification.message}</span>
+                    <span style={{ display: "block", marginTop: 7, color: "#8fa2bb", fontSize: 11 }}>{new Date(notification.created_at).toLocaleString("ro-RO")}</span>
+                  </button>
+                ))}
+                {activityUnreadCount > 0 && <button type="button" onClick={async () => { await fetch('/api/notifications', { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ all: true }) }); await refreshNotifications(false); }} style={{ width: "100%", padding: 9, border: 0, borderRadius: 9, background: "#263957", color: "#dce8ff", cursor: "pointer", fontSize: 12 }}>Marchează toate ca citite</button>}
+              </div>}
+            </div>
             <div className="account-avatar">{user.displayName.trim().charAt(0).toUpperCase() || 'U'}</div>
             <div className="account-meta">
               <strong>{user.displayName}</strong>
