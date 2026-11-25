@@ -338,18 +338,6 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                     <div className="profile-avatar">{user.displayName.trim().charAt(0).toUpperCase() || 'U'}</div>
                     <div><strong>{user.displayName}</strong><span>{user.email}</span></div>
                   </div>
-                  <div className="profile-theme-settings">
-                <div className="profile-theme-heading"><span className="profile-theme-icon"><Palette size={18}/></span><div><strong>Temă interfață</strong><p>Alege aspectul platformei. Preferința se păstrează pe acest dispozitiv.</p></div></div>
-                <div className="profile-theme-grid">
-                  {interfaceThemes.map(option => (
-                    <button key={option.id} type="button" className={`profile-theme-option ${theme === option.id ? 'selected' : ''}`} onClick={() => setTheme(option.id)} aria-pressed={theme === option.id}>
-                      <span className={`theme-preview theme-preview-${option.id}`}><i/><i/><i/></span>
-                      <span className="profile-theme-option-copy"><strong>{option.label}</strong><small>{option.description}</small></span>
-                      {theme === option.id && <span className="theme-selected-mark">Activă</span>}
-                    </button>
-                  ))}
-                </div>
-              </div>
               <div className="profile-status"><span className="status-dot" /> Cont activ și email confirmat</div>
                   <button className="text-link" onClick={() => setActiveSection('profile')}>Vezi profilul <ArrowUpRight size={15} /></button>
                 </section>
@@ -401,6 +389,18 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
               </>}
               <div className="profile-detail-row"><span>Adresă de email</span><strong>{user.email}</strong></div>
               <div className="profile-detail-row"><span>Rol în platformă</span><strong>{user.role === 'admin' ? 'Administrator' : user.role === 'moderator' ? 'Moderator' : 'Membru'}</strong></div>
+              <div className="profile-theme-settings">
+                <div className="profile-theme-heading"><span className="profile-theme-icon"><Palette size={18}/></span><div><strong>Temă interfață</strong><p>Alege aspectul platformei. Preferința se păstrează pe acest dispozitiv.</p></div></div>
+                <div className="profile-theme-grid">
+              {interfaceThemes.map(option => (
+                <button key={option.id} type="button" className={`profile-theme-option ${theme === option.id ? 'selected' : ''}`} onClick={() => setTheme(option.id)} aria-pressed={theme === option.id}>
+                  <span className={`theme-preview theme-preview-${option.id}`}><i/><i/><i/></span>
+                  <span className="profile-theme-option-copy"><strong>{option.label}</strong><small>{option.description}</small></span>
+                  {theme === option.id && <span className="theme-selected-mark">Activă</span>}
+                </button>
+              ))}
+                </div>
+              </div>
               <div className="profile-status"><span className="status-dot" /> Cont activ și email confirmat</div>
             </section>
           )}
