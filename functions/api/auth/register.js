@@ -1,3 +1,4 @@
+import { validOrigin } from "../_utils/session.js";
 
 // Cloudflare Workers WebCrypto supports at most 100,000 PBKDF2 iterations.
 const ITERATIONS = 100000;
@@ -158,6 +159,13 @@ async function sendVerificationEmail(email, displayName, token, apiKey, siteUrl)
 }
 
 export async function onRequestPost({ request, env }) {
+  if (!validOrigin(request)) {
+    return Response.json(
+      { error: "Originea cererii nu este permisă." },
+      { status: 403, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
   let stage = "environment_check";
   let failureStage = null;
   const isPreview = new URL(request.url).hostname.endsWith(".com-unity.pages.dev");
