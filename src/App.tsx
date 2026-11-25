@@ -284,7 +284,6 @@ function App() {
                 {authMode === 'login' ? 'Recuperează parola' : authMode === 'forgot' ? 'Revino la autentificare' : 'Autentifică-te'}
               </button>
             </p>
-            {authMode === 'register' && <p className="auth-switch">Nu ai încă un cont? <button onClick={() => { setError(''); setAuthMode('register'); }}>Înregistrează-te</button></p>}
             <p className="auth-legal">Prin continuare, folosești COM-Unity în mod responsabil și respecți comunitatea.</p>
           </section>
         </div>
