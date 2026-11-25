@@ -141,14 +141,14 @@ function HelpRequests({ userId }: { userId: string }) {
         <div className="request-meta"><span>Publicat de {item.author_name}</span>{item.location && <span><MapPin size={14}/>{item.location}</span>}<span><CalendarDays size={14}/>{new Date(item.created_at).toLocaleDateString("ro-RO")}</span></div>
         <div className="request-card-actions">
           {item.user_id !== userId && item.status === "open" && <button onClick={() => void toggleResponses(item)}>Oferă ajutor / Vezi răspunsurile</button>}
-          {item.user_id === userId && <><button onClick={() => void updateStatus(item)}>{item.status === "open" ? <><CheckCircle2 size={15}/> Marchează rezolvată</> : <><Circle size={15}/> Redeschide</>}</button><button className="danger" onClick={() => void deleteRequest(item)}><Trash2 size={15}/> Șterge</button></>}
+          {item.user_id === userId && <><button onClick={() => void toggleResponses(item)}>Vezi conversația</button><button onClick={() => void updateStatus(item)}>{item.status === "open" ? <><CheckCircle2 size={15}/> Marchează rezolvată</> : <><Circle size={15}/> Redeschide</>}</button><button className="danger" onClick={() => void deleteRequest(item)}><Trash2 size={15}/> Șterge</button></>}
         </div>
         {expandedRequest === item.id && <div className="request-responses">
           <h3>Răspunsuri și mesaje</h3>
           {(responses[item.id] || []).length === 0 ? <p>Nu există răspunsuri încă.</p> : (responses[item.id] || []).map(reply => <div className="request-response" key={reply.id}><strong>{reply.author_name}</strong><p>{reply.message}</p><small>{new Date(reply.created_at).toLocaleString("ro-RO")}</small></div>)}
-          {item.status === "open" && item.user_id !== userId && <form onSubmit={event => void sendResponse(item, event)} className="request-response-form">
-            <label htmlFor={`response-${item.id}`}>Trimite un mesaj autorului</label>
-            <textarea id={`response-${item.id}`} value={responseDraft} onChange={event => setResponseDraft(event.target.value)} minLength={10} maxLength={2000} rows={3} placeholder="Scrie cum poți ajuta..." required />
+          {item.status === "open" && <form onSubmit={event => void sendResponse(item, event)} className="request-response-form">
+            <label htmlFor={`response-${item.id}`}>Trimite un mesaj în conversație</label>
+            <textarea id={`response-${item.id}`} value={responseDraft} onChange={event => setResponseDraft(event.target.value)} minLength={10} maxLength={2000} rows={3} placeholder="Scrie mesajul tău..." required />
             <button className="button button-primary" disabled={sendingResponse || responseDraft.trim().length < 10}>{sendingResponse ? "Se trimite..." : "Trimite răspunsul"}</button>
           </form>}
         </div>}
