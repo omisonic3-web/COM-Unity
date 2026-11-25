@@ -44,27 +44,41 @@ export async function onRequestPost({ request, env }) {
     ).bind(id).first();
     if (!helpRequest) return json({ error: "Cererea nu a fost găsită." }, 404);
     if (helpRequest.status !== "open") return json({ error: "Cererea nu mai este deschisă." }, 409);
-    if (helpRequest.user_id === auth.user.id) {
-      return json({ error: "Nu poți răspunde propriei cereri." }, 403);
-    }
-
     const responseId = crypto.randomUUID();
     await env.DB.prepare(`
       INSERT INTO help_request_responses (id, request_id, user_id, message)
       VALUES (?, ?, ?, ?)
     `).bind(responseId, id, auth.user.id, message).run();
 
-    await env.DB.prepare(`
-      INSERT INTO notifications
-        (id, user_id, actor_id, type, title, message, entity_type, entity_id)
-      VALUES (?, ?, ?, 'request_response', 'Ai primit un răspuns la cererea ta', ?, 'request', ?)
-    `).bind(
-      crypto.randomUUID(),
-      helpRequest.user_id,
-      auth.user.id,
-      `Un membru ți-a răspuns la cererea „${helpRequest.title}”.`,
-      id
-    ).run();
+    if (auth.user.id === helpRequest.user_id) {
+      await env.DB.prepare(`
+        INSERT INTO notifications
+          (id, user_id, actor_id, type, title, message, entity_type, entity_id)
+        SELECT ?, r.user_id, ?, 'request_response', 'Ai primit un mesaj în conversație', ?, 'request', ?
+        FROM help_request_responses r
+        WHERE r.request_id = ? AND r.user_id != ?
+        GROUP BY r.user_id
+      `).bind(
+        crypto.randomUUID(),
+        auth.user.id,
+        `Autorul a răspuns în conversația „${helpRequest.title}”.`,
+        id,
+        id,
+        auth.user.id
+      ).run();
+    } else {
+      await env.DB.prepare(`
+        INSERT INTO notifications
+          (id, user_id, actor_id, type, title, message, entity_type, entity_id)
+        VALUES (?, ?, ?, 'request_response', 'Ai primit un răspuns la cererea ta', ?, 'request', ?)
+      `).bind(
+        crypto.randomUUID(),
+        helpRequest.user_id,
+        auth.user.id,
+        `Un membru ți-a răspuns la cererea „${helpRequest.title}”.`,
+        id
+      ).run();
+    }
 
     return json({ ok: true, id: responseId }, 201);
   } catch (error) {
