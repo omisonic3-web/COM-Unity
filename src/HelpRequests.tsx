@@ -16,6 +16,10 @@ function HelpRequests({ userId }: { userId: string }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [filter, setFilter] = useState<"all" | "mine">("all");
+  const [expandedRequest, setExpandedRequest] = useState<string | null>(null);
+  const [responses, setResponses] = useState<Record<string, { id: string; user_id: string; message: string; created_at: string; author_name: string }[]>>({});
+  const [responseDraft, setResponseDraft] = useState("");
+  const [sendingResponse, setSendingResponse] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true); setError("");
@@ -72,6 +76,34 @@ function HelpRequests({ userId }: { userId: string }) {
     } catch (e) { setError(e instanceof Error ? e.message : "Eroare."); }
   }
 
+  async function toggleResponses(item: HelpRequest) {
+    if (expandedRequest === item.id) { setExpandedRequest(null); return; }
+    setExpandedRequest(item.id); setResponseDraft(""); setError("");
+    try {
+      const response = await fetch(`/api/requests/${encodeURIComponent(item.id)}/responses`, { credentials: "same-origin", cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Nu am putut încărca răspunsurile.");
+      setResponses(current => ({ ...current, [item.id]: data.responses || [] }));
+    } catch (e) { setError(e instanceof Error ? e.message : "Eroare la încărcarea răspunsurilor."); }
+  }
+
+  async function sendResponse(item: HelpRequest, event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setSendingResponse(true); setError("");
+    try {
+      const response = await fetch(`/api/requests/${encodeURIComponent(item.id)}/responses`, {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: responseDraft })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Răspunsul nu a putut fi trimis.");
+      setResponseDraft("");
+      await toggleResponses(item);
+      setExpandedRequest(item.id);
+      setSuccess("Răspunsul a fost trimis. Autorul cererii va primi o notificare.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Eroare la trimiterea răspunsului."); }
+    finally { setSendingResponse(false); }
+  }
+
   const visible = filter === "mine" ? items.filter(item => item.user_id === userId) : items;
 
   return <section className="help-requests-module">
@@ -106,7 +138,19 @@ function HelpRequests({ userId }: { userId: string }) {
         <div className="request-card-top"><span className={item.status === "open" ? "request-status open" : "request-status closed"}>{item.status === "open" ? "Deschisă" : "Închisă"}</span><span className="request-category">{item.category}</span></div>
         <h2>{item.title}</h2><p className="request-description">{item.description}</p>
         <div className="request-meta"><span>Publicat de {item.author_name}</span>{item.location && <span><MapPin size={14}/>{item.location}</span>}<span><CalendarDays size={14}/>{new Date(item.created_at).toLocaleDateString("ro-RO")}</span></div>
-        {item.user_id === userId && <div className="request-card-actions"><button onClick={() => void updateStatus(item)}>{item.status === "open" ? <><CheckCircle2 size={15}/> Marchează rezolvată</> : <><Circle size={15}/> Redeschide</>}</button><button className="danger" onClick={() => void deleteRequest(item)}><Trash2 size={15}/> Șterge</button></div>}
+        <div className="request-card-actions">
+          {item.user_id !== userId && item.status === "open" && <button onClick={() => void toggleResponses(item)}>Oferă ajutor / Vezi răspunsurile</button>}
+          {item.user_id === userId && <><button onClick={() => void updateStatus(item)}>{item.status === "open" ? <><CheckCircle2 size={15}/> Marchează rezolvată</> : <><Circle size={15}/> Redeschide</>}</button><button className="danger" onClick={() => void deleteRequest(item)}><Trash2 size={15}/> Șterge</button></>}
+        </div>
+        {expandedRequest === item.id && <div className="request-responses">
+          <h3>Răspunsuri și mesaje</h3>
+          {(responses[item.id] || []).length === 0 ? <p>Nu există răspunsuri încă.</p> : (responses[item.id] || []).map(reply => <div className="request-response" key={reply.id}><strong>{reply.author_name}</strong><p>{reply.message}</p><small>{new Date(reply.created_at).toLocaleString("ro-RO")}</small></div>)}
+          {item.status === "open" && item.user_id !== userId && <form onSubmit={event => void sendResponse(item, event)} className="request-response-form">
+            <label htmlFor={`response-${item.id}`}>Trimite un mesaj autorului</label>
+            <textarea id={`response-${item.id}`} value={responseDraft} onChange={event => setResponseDraft(event.target.value)} minLength={10} maxLength={2000} rows={3} placeholder="Scrie cum poți ajuta..." required />
+            <button className="button button-primary" disabled={sendingResponse || responseDraft.trim().length < 10}>{sendingResponse ? "Se trimite..." : "Trimite răspunsul"}</button>
+          </form>}
+        </div>}
       </article>)}</div>
     }
   </section>;
