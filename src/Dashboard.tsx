@@ -504,7 +504,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                     {deletionError && <div className="requests-alert error" role="alert">{deletionError}</div>}
                     <div className="request-form-footer">
                       <button type="button" className="button button-outline" onClick={() => { setDeletionOpen(false); setDeletionPassword(''); setDeletionConfirmation(''); setDeletionError(''); }} disabled={deletionSaving}>Anulează</button>
-                      <button type="submit" className="button account-deletion-confirm" disabled={deletionSaving || !deletionPassword || deletionConfirmation !== 'ȘTERGE CONTUL'}>{deletionSaving ? 'Se procesează...' : 'Confirmă ștergerea definitivă'}</button>
+                      <button type="submit" className="button account-deletion-confirm" disabled={deletionSaving || !deletionPassword || deletionConfirmation !== 'ȘTERGE CONTUL'}>{deletionSaving ? 'Se procesează...' : 'Confirmă ștergerea datelor de cont'}</button>
                     </div>
                   </form>
                 )}
