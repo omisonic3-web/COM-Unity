@@ -1528,3 +1528,11 @@ footer .brand {
 .legal-links a { color:#83dff0; text-decoration:underline; text-underline-offset:3px; }
 .legal-links a:hover { color:#c5f5ff; }
 @media (max-width:600px) { footer, .dashboard-footer { flex-wrap:wrap; align-items:flex-start; } .legal-links { gap:10px 14px; } }
+
+
+/* Confirmări obligatorii la înregistrare */
+.registration-consents { display:grid; gap:12px; margin:0; padding:14px; border:1px solid #ffffff24; border-radius:12px; min-width:0; }
+.registration-consents legend { padding:0 7px; color:#9ce8f5; font-size:12px; font-weight:700; }
+.auth-modal .registration-consents .consent-option { display:flex; align-items:flex-start; gap:10px; color:#cbd7e8; font-size:12px; line-height:1.5; font-weight:500; }
+.auth-modal .registration-consents .consent-option input[type="checkbox"] { flex:0 0 17px; width:17px; min-height:17px; height:17px; margin:2px 0 0; padding:0; accent-color:#56d9f5; }
+.registration-consents a { color:#7ee2f2; text-decoration:underline; text-underline-offset:2px; }
