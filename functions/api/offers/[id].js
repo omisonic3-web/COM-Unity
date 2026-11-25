@@ -12,7 +12,7 @@ export async function onRequestPatch({ request, env }) {
   const id = offerId(request);
   let body;
   try { body = await request.json(); } catch { return json({ error: "Date JSON invalide." }, 400); }
-  if (!body || (body.status !== "active" && body.status !== "inactive")) {
+  if (!body || (body.status !== "active" && body.status !== "closed")) {
     return json({ error: "Stare invalidă." }, 400);
   }
 
