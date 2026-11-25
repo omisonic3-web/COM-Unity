@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import Dashboard from './Dashboard';
 import {
   Globe2, HeartHandshake, Users, ShieldCheck, ArrowRight, HandHeart,
   MessageCircle, FolderKanban, X, LogOut, UserRound, LoaderCircle
@@ -116,6 +117,7 @@ function App() {
 
   return (
     <main className="app-shell">
+      {!user && <>
       <header className="navbar">
         <a className="brand" href="/">
           <span className="brand-icon"><Globe2 /></span>
@@ -156,6 +158,11 @@ function App() {
         </div>
       )}
 
+      </>}
+
+      {user ? (
+        <Dashboard user={user} onLogout={handleLogout} loading={loading} />
+      ) : <>
       <section className="hero" id="despre">
         <div className="hero-content">
           <span className="eyebrow">
@@ -243,6 +250,8 @@ function App() {
         </a>
         <span>© 2026 COM-Unity. Împreună putem mai mult.</span>
       </footer>
+
+      </>}
 
       {authMode && (
         <div className="modal-backdrop" onMouseDown={event => {
