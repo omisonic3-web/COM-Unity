@@ -13,7 +13,9 @@ export async function onRequestGet({ request, env }) {
   try {
     await ensureProfileTable(env);
     const row = await env.DB.prepare("SELECT avatar_id FROM user_profiles WHERE user_id = ?").bind(auth.user.id).first();
-    return json({ ok: true, user: { avatarId: row?.avatar_id || "person-1" } }, 200);
+    let reputation = { average: 0, count: 0 };
+    try { reputation = await env.DB.prepare("SELECT ROUND(AVG(rating), 1) AS average, COUNT(*) AS count FROM project_ratings WHERE reviewee_id = ?").bind(auth.user.id).first() || reputation; } catch { /* tabela apare la prima accesare a evaluărilor */ }
+    return json({ ok: true, user: { avatarId: row?.avatar_id || "person-1", ratingAverage: reputation.average || 0, ratingCount: reputation.count || 0 } }, 200);
   } catch (error) {
     console.error("COM-Unity profile read failed:", error);
     return json({ error: "Profilul nu a putut fi încărcat." }, 500);
