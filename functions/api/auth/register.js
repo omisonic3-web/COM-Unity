@@ -264,7 +264,7 @@ export async function onRequestPost({ request, env }) {
     return Response.json(
       {
         error: "Registration failed. Please try again later.",
-        ...(isPreview ? { diagnostic: diagnosticStage } : {})
+        ...(isPreview ? { diagnostic: diagnosticStage, diagnosticReason: `${error?.name || "Error"}: ${String(error?.message || "Unknown error").slice(0, 180)}` } : {})
       },
       {
         status: 500,
