@@ -28,14 +28,13 @@ function AdminPanel() {
   async function load() {
     setLoading(true); setError('');
     try {
-      const [overviewResponse, catalogResponse] = await Promise.all([
+      const [overviewResponse, catalogResponse, linksResponse] = await Promise.all([
         fetch('/api/admin', { credentials: 'same-origin', cache: 'no-store' }),
         fetch('/api/admin/catalog', { credentials: 'same-origin', cache: 'no-store' }),
         fetch('/api/admin/links', { credentials: 'same-origin', cache: 'no-store' })
       ]);
       const overview = await overviewResponse.json().catch(() => ({}));
       const catalog = await catalogResponse.json().catch(() => ({}));
-      const linksResponse = await fetch('/api/admin/links', { credentials: 'same-origin', cache: 'no-store' });
       const linkData = await linksResponse.json().catch(() => ({}));
       if (!overviewResponse.ok) throw new Error(overview.error || 'Datele nu au putut fi încărcate.');
       if (!catalogResponse.ok) throw new Error(catalog.error || 'Temele și zonele nu au putut fi încărcate.');
