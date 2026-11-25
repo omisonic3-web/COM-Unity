@@ -1,3 +1,4 @@
+import { validOrigin } from "../_utils/session.js";
 
 async function hashToken(token) {
   const data = new TextEncoder().encode(token);
@@ -9,6 +10,13 @@ async function hashToken(token) {
 }
 
 export async function onRequestPost({ request, env }) {
+  if (!validOrigin(request)) {
+    return Response.json(
+      { error: "Originea cererii nu este permisă." },
+      { status: 403, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
   if (!env.DB) {
     return Response.json(
       { error: "Database unavailable" },
