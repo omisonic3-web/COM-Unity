@@ -9,6 +9,8 @@ type HelpOffer = {
 const categories = ["Comunitate", "Educație", "Sănătate", "Alimente și bunuri", "Transport", "Locuință", "Tehnologie", "Reparații și servicii", "Altele"];
 
 function HelpOffers({ userId }: { userId: string }) {
+  const [categories, setCategories] = useState<string[]>(defaultCategories);
+  const [zones, setZones] = useState<string[]>([]);
   const [items, setItems] = useState<HelpOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -29,6 +31,17 @@ function HelpOffers({ userId }: { userId: string }) {
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  useEffect(() => {
+    fetch("/api/catalog", { credentials: "same-origin", cache: "no-store" })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (!data) return;
+        const available = (data.categories || []).filter((item: { kind: string }) => item.kind === "both" || item.kind === "offer").map((item: { name: string }) => item.name);
+        if (available.length) setCategories(available);
+        setZones((data.zones || []).map((item: { name: string }) => item.name));
+      }).catch(() => { /* păstrează categoriile implicite dacă catalogul nu răspunde */ });
+  }, []);
 
   async function createOffer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSaving(true); setError(""); setSuccess("");
@@ -95,7 +108,7 @@ function HelpOffers({ userId }: { userId: string }) {
       <label>Descriere<textarea name="description" minLength={20} maxLength={5000} rows={5} placeholder="Descrie ce poți oferi, cui și în ce condiții..." required /></label>
       <div className="request-form-row">
         <label>Categorie<select name="category" required defaultValue=""><option value="" disabled>Alege categoria</option>{categories.map(category => <option key={category}>{category}</option>)}</select></label>
-        <label>Localitate (opțional)<input name="location" maxLength={120} placeholder="Oraș / comună" /></label>
+        <label>Localitate / zonă (opțional)<input name="location" list="offer-zones" maxLength={120} placeholder="Alege sau scrie localitatea" /><datalist id="offer-zones">{zones.map(zone => <option key={zone} value={zone} />)}</datalist></label>
       </div>
       <div className="request-form-footer"><span>Nu include date personale sensibile.</span><button className="button button-primary" disabled={saving}>{saving ? "Se publică..." : "Publică oferta"}</button></div>
     </form>}
