@@ -28,7 +28,7 @@ export async function onRequestGet({ request, env }) {
     await env.DB.prepare(`INSERT OR IGNORE INTO about_content
       (id,title,intro,mission,vision,values_text,contact_email,contact_location)
       VALUES (1,?,?,?,?,?,?,?)`)
-      .bind(defaults.title,defaults.intro,defaults.mission,defaults.vision,defaults.values,defaults.contact_email,defaults.contact_location).run();
+      .bind(defaults.title,defaults.intro,defaults.mission,defaults.vision,defaults.values_text,defaults.contact_email,defaults.contact_location).run();
     const content = await env.DB.prepare("SELECT title,intro,mission,vision,values_text,contact_email,contact_location,updated_at FROM about_content WHERE id=1").first();
     return json({ content });
   } catch (error) {
