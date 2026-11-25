@@ -161,6 +161,17 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
+    if (
+      body.ageConfirmed !== true ||
+      body.termsAccepted !== true ||
+      body.privacyAcknowledged !== true
+    ) {
+      return Response.json(
+        { error: "Pentru înregistrare trebuie să confirmi că ai minimum 18 ani, să accepți Termenii și condițiile și să confirmi că ai citit informarea de confidențialitate." },
+        { status: 400 }
+      );
+    }
+
     stage = "hash_password";
     const id = crypto.randomUUID();
     const passwordHash = await hashPassword(password);
@@ -189,6 +200,26 @@ export async function onRequestPost({ request, env }) {
       email,
       passwordHash,
       displayName
+    ).run();
+
+    stage = "insert_registration_acceptance";
+    await env.DB.prepare(`
+      INSERT INTO registration_acceptances (
+        id,
+        user_id,
+        terms_version,
+        privacy_version,
+        age_confirmed,
+        privacy_acknowledged,
+        accepted_at
+      )
+      VALUES (?, ?, ?, ?, 1, 1, ?)
+    `).bind(
+      crypto.randomUUID(),
+      id,
+      "2026-11-26-v1",
+      "2026-11-26-v1",
+      new Date().toISOString()
     ).run();
 
     try {
@@ -222,6 +253,11 @@ export async function onRequestPost({ request, env }) {
       console.error("COM-Unity registration failure during token/email step:", stage, error?.name || "Error", error?.message || "Unknown error");
       stage = "rollback_registration";
       await env.DB.batch([
+        env.DB.prepare(`
+          DELETE FROM registration_acceptances
+          WHERE user_id = ?
+        `).bind(id),
+
         env.DB.prepare(`
           DELETE FROM email_verification_tokens
           WHERE user_id = ?
