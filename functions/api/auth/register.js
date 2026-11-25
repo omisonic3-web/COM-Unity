@@ -61,6 +61,57 @@ async function hashToken(token) {
   return toHex(new Uint8Array(digest));
 }
 
+
+const REGISTRATION_WINDOW_SECONDS = 60 * 60;
+const REGISTRATION_MAX_ATTEMPTS = 3;
+
+async function getRegistrationIpHash(request) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(`com-unity-registration-v1|${ip}`)
+  );
+  return toHex(new Uint8Array(digest));
+}
+
+async function recordRegistrationAttempt(env, ipHash, now) {
+  const row = await env.DB.prepare(`
+    INSERT INTO auth_registration_attempts (
+      ip_hash, window_started_at, attempts, updated_at
+    )
+    VALUES (?, ?, 1, ?)
+    ON CONFLICT(ip_hash) DO UPDATE SET
+      attempts = CASE
+        WHEN excluded.updated_at - auth_registration_attempts.window_started_at >= ? THEN 1
+        ELSE auth_registration_attempts.attempts + 1
+      END,
+      window_started_at = CASE
+        WHEN excluded.updated_at - auth_registration_attempts.window_started_at >= ? THEN excluded.window_started_at
+        ELSE auth_registration_attempts.window_started_at
+      END,
+      updated_at = excluded.updated_at
+    RETURNING attempts, window_started_at
+  `).bind(
+    ipHash, now, now,
+    REGISTRATION_WINDOW_SECONDS,
+    REGISTRATION_WINDOW_SECONDS
+  ).first();
+
+  if (now % 3600 < 10) {
+    await env.DB.prepare(
+      "DELETE FROM auth_registration_attempts WHERE updated_at < ?"
+    ).bind(now - 24 * 60 * 60).run();
+  }
+
+  const attempts = Number(row?.attempts || 0);
+  const retryAfter = Math.max(
+    1,
+    REGISTRATION_WINDOW_SECONDS - (now - Number(row?.window_started_at || now))
+  );
+
+  return { attempts, retryAfter };
+}
+
 async function sendVerificationEmail(email, displayName, token, apiKey, siteUrl) {
   const verificationUrl =
     `${siteUrl}/verify-email.html?token=${encodeURIComponent(token)}`;
@@ -135,6 +186,23 @@ export async function onRequestPost({ request, env }) {
 
     if (body.website) {
       return Response.json({ ok: true });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const ipHash = await getRegistrationIpHash(request);
+    const registrationState = await recordRegistrationAttempt(env, ipHash, now);
+
+    if (registrationState.attempts > REGISTRATION_MAX_ATTEMPTS) {
+      return Response.json(
+        { error: "Prea multe încercări de înregistrare de la această conexiune. Încearcă din nou peste o oră." },
+        {
+          status: 429,
+          headers: {
+            "Cache-Control": "no-store",
+            "Retry-After": String(registrationState.retryAfter)
+          }
+        }
+      );
     }
 
     if (
