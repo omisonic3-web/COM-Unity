@@ -32,7 +32,8 @@ function HelpRequests({ userId }: { userId: string }) {
 
   async function createRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSaving(true); setError(""); setSuccess("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const payload = Object.fromEntries(["title", "description", "category", "location"].map(key => [key, String(form.get(key) || "")]));
     try {
       const response = await fetch("/api/requests", {
@@ -42,7 +43,7 @@ function HelpRequests({ userId }: { userId: string }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Cererea nu a putut fi publicată.");
       setShowForm(false); setSuccess("Cererea ta a fost publicată.");
-      event.currentTarget.reset();
+      formElement.reset();
       await load();
     } catch (e) { setError(e instanceof Error ? e.message : "Eroare la publicare."); }
     finally { setSaving(false); }
