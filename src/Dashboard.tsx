@@ -288,8 +288,8 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
       setDeletionError('Conturile de administrator nu pot fi șterse înainte de transferul rolului.');
       return;
     }
-    if (deletionConfirmation !== 'ȘTERGE CONTUL') {
-      setDeletionError('Scrie exact ȘTERGE CONTUL pentru confirmare.');
+    if (deletionConfirmation !== 'STERGE CONTUL') {
+      setDeletionError('Scrie exact STERGE CONTUL pentru confirmare.');
       return;
     }
     setDeletionSaving(true);
@@ -587,7 +587,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                     <label>Parola actuală
                       <input type="password" value={deletionPassword} onChange={event => setDeletionPassword(event.target.value)} autoComplete="current-password" maxLength={128} required />
                     </label>
-                    <label>Scrie exact <strong>ȘTERGE CONTUL</strong> pentru confirmare
+                    <label>Scrie exact <strong>STERGE CONTUL</strong> pentru confirmare
                       <input type="text" value={deletionConfirmation} onChange={event => setDeletionConfirmation(event.target.value)} autoComplete="off" required />
                     </label>
                     <ul>
@@ -599,7 +599,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                     {deletionError && <div className="requests-alert error" role="alert">{deletionError}</div>}
                     <div className="request-form-footer">
                       <button type="button" className="button button-outline" onClick={() => { setDeletionOpen(false); setDeletionPassword(''); setDeletionConfirmation(''); setDeletionError(''); }} disabled={deletionSaving}>Anulează</button>
-                      <button type="submit" className="button account-deletion-confirm" disabled={deletionSaving || !deletionPassword || deletionConfirmation !== 'ȘTERGE CONTUL'}>{deletionSaving ? 'Se procesează...' : 'Confirmă ștergerea datelor de cont'}</button>
+                      <button type="submit" className="button account-deletion-confirm" disabled={deletionSaving || !deletionPassword || deletionConfirmation !== 'STERGE CONTUL'}>{deletionSaving ? 'Se procesează...' : 'Confirmă ștergerea datelor de cont'}</button>
                     </div>
                   </form>
                 )}
