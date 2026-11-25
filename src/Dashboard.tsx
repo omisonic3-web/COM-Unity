@@ -51,7 +51,9 @@ function Dashboard({ user, onLogout, loading }: Props) {
   const [activeSection, setActiveSection] = useState<Section>('overview');
   const [unreadCount, setUnreadCount] = useState(0);
   const [messageNotice, setMessageNotice] = useState<{ sender: string; message: string } | null>(null);
-  const [activityUnreadCount, setActivityUnreadCount] = useState(0);\n  const [notifications, setNotifications] = useState<ActivityNotification[]>([]);\n  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [activityUnreadCount, setActivityUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<ActivityNotification[]>([]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [activityNotice, setActivityNotice] = useState<{ id: string; title: string; message: string; actor: string; entityType: string | null } | null>(null);
   const latestActivityId = useRef<string | null>(null);
   const activityNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -80,7 +82,8 @@ function Dashboard({ user, onLogout, loading }: Props) {
       const response = await fetch('/api/notifications', { credentials: 'same-origin', cache: 'no-store' });
       if (!response.ok) return;
       const data = await response.json();
-      setActivityUnreadCount(data.unread_count || 0);\n      setNotifications(data.notifications || []);
+      setActivityUnreadCount(data.unread_count || 0);
+      setNotifications(data.notifications || []);
       const latest = (data.notifications || []).find((item: { read_at: string | null }) => !item.read_at);
       if (latest?.id) {
         if (latestActivityId.current && latestActivityId.current !== latest.id && notify) {
