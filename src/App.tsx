@@ -56,7 +56,10 @@ function App() {
           displayName: String(form.get('displayName') || '').trim(),
           email: String(form.get('email') || '').trim(),
           password: String(form.get('password') || ''),
-          website: String(form.get('website') || '')
+          website: String(form.get('website') || ''),
+          ageConfirmed: form.get('ageConfirmed') === 'on',
+          termsAccepted: form.get('termsAccepted') === 'on',
+          privacyAcknowledged: form.get('privacyAcknowledged') === 'on'
         }
       : {
           email: String(form.get('email') || '').trim(),
@@ -279,6 +282,23 @@ function App() {
                 Parolă
                 <input name="password" type="password" minLength={authMode === 'register' ? 12 : 1} maxLength={128} autoComplete={authMode === 'register' ? 'new-password' : 'current-password'} placeholder={authMode === 'register' ? 'Minimum 12 caractere' : 'Parola ta'} required />
               </label>
+              {authMode === 'register' && (
+                <fieldset className="registration-consents">
+                  <legend>Confirmări obligatorii</legend>
+                  <label className="consent-option">
+                    <input type="checkbox" name="ageConfirmed" required />
+                    <span>Confirm că am împlinit 18 ani.</span>
+                  </label>
+                  <label className="consent-option">
+                    <input type="checkbox" name="termsAccepted" required />
+                    <span>Am citit și accept <a href="/termeni.html" target="_blank" rel="noreferrer">Termenii și condițiile</a>.</span>
+                  </label>
+                  <label className="consent-option">
+                    <input type="checkbox" name="privacyAcknowledged" required />
+                    <span>Confirm că am citit <a href="/confidentialitate.html" target="_blank" rel="noreferrer">Politica de confidențialitate</a>.</span>
+                  </label>
+                </fieldset>
+              )}
               {authMode === 'register' && (
                 <div className="honeypot" aria-hidden="true">
                   <label>Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
