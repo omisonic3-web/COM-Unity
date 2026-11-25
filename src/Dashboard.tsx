@@ -143,6 +143,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
   const [profileName, setProfileName] = useState(user.displayName);
   const [avatarId, setAvatarId] = useState('person-1');
   const [avatarSaving, setAvatarSaving] = useState(false);
+  const [reputation, setReputation] = useState({ average: 0, count: 0 });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
@@ -275,7 +276,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
     let active = true;
     fetch('/api/profile', { credentials: 'same-origin', cache: 'no-store' })
       .then(response => response.ok ? response.json() : null)
-      .then(data => { if (active && data?.user?.avatarId) setAvatarId(data.user.avatarId); })
+      .then(data => { if (active && data?.user) { if (data.user.avatarId) setAvatarId(data.user.avatarId); setReputation({ average: Number(data.user.ratingAverage || 0), count: Number(data.user.ratingCount || 0) }); } })
       .catch(() => {});
     return () => { active = false; };
   }, []);
@@ -489,6 +490,10 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
               </>}
               <div className="profile-detail-row"><span>Adresă de email</span><strong>{user.email}</strong></div>
               <div className="profile-detail-row"><span>Rol în platformă</span><strong>{user.role === 'admin' ? 'Administrator' : user.role === 'moderator' ? 'Moderator' : 'Membru'}</strong></div>
+              <div className="profile-reputation">
+                <div><strong>Reputația mea</strong><span>Evaluări primite în proiectele finalizate</span></div>
+                <div className="profile-reputation-score"><strong>{reputation.count ? reputation.average.toFixed(1) : '—'}</strong><span className="project-rating-value">★★★★★</span><small>{reputation.count} {reputation.count === 1 ? 'evaluare' : 'evaluări'}</small></div>
+              </div>
               <div className="profile-theme-settings">
                 <div className="profile-theme-heading"><span className="profile-theme-icon"><Palette size={18}/></span><div><strong>Temă interfață</strong><p>Alege aspectul platformei. Preferința se păstrează pe acest dispozitiv.</p></div></div>
                 <div className="profile-theme-grid">
