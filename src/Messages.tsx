@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { MessageCircle, RefreshCw, Send, Users } from "lucide-react";
 
 type Member = { id: string; display_name: string };
-type Conversation = { user_id: string; display_name: string; last_message: string; created_at: string };
+type Conversation = { user_id: string; display_name: string; last_message: string; created_at: string; unread_count?: number };
 type Message = { id: string; sender_id: string; receiver_id: string; message: string; created_at: string; sender_name: string };
 
-function Messages({ userId }: { userId: string }) {
+function Messages({ userId, onRead }: { userId: string; onRead?: () => void }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selected, setSelected] = useState("");
@@ -39,8 +39,9 @@ function Messages({ userId }: { userId: string }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Nu am putut încărca conversația.");
       setMessages(data.messages || []);
+      onRead?.();
     } catch (e) { setError(e instanceof Error ? e.message : "Eroare la încărcarea conversației."); }
-  }, []);
+  }, [onRead]);
 
   useEffect(() => { void load(); }, [load]);
   useEffect(() => { void loadThread(selected); }, [selected, loadThread]);
@@ -80,6 +81,7 @@ function Messages({ userId }: { userId: string }) {
         {loading ? <p>Se încarcă...</p> : members.length === 0 ? <p>Nu există alți membri confirmați.</p> : members.map(member =>
           <button key={member.id} className={selected === member.id ? "message-person selected" : "message-person"} onClick={() => setSelected(member.id)}>
             <span className="message-avatar">{member.display_name.trim().charAt(0).toUpperCase() || "M"}</span><span>{member.display_name}</span>
+            {conversations.find(item => item.user_id === member.id)?.unread_count ? <span className="message-unread-badge">{conversations.find(item => item.user_id === member.id)?.unread_count}</span> : null}
           </button>
         )}
       </aside>
