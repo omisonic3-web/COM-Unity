@@ -13,7 +13,7 @@ export async function onRequestGet({ request, env }) {
   try {
     await ensureProfileTable(env);
     const row = await env.DB.prepare("SELECT avatar_id FROM user_profiles WHERE user_id = ?").bind(auth.user.id).first();
-    return json({ ok: true, user: { avatarId: row?.avatar_id || "person-1" } }, 200, { "Cache-Control": "no-store" });
+    return json({ ok: true, user: { avatarId: row?.avatar_id || "person-1" } }, 200);
   } catch (error) {
     console.error("COM-Unity profile read failed:", error);
     return json({ error: "Profilul nu a putut fi încărcat." }, 500);
