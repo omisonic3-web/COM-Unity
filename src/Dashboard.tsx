@@ -536,7 +536,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
               <div className="profile-status"><span className="status-dot" /> Cont activ și email confirmat</div>
             </section>
           )}
-          <footer className="dashboard-footer"><span>© 2026 COM-Unity</span><span>Împreună putem mai mult.</span></footer>
+          <footer className="dashboard-footer"><span>© 2026 COM-Unity · Împreună putem mai mult.</span><nav className="legal-links" aria-label="Documente legale"><a href="/confidentialitate.html">Confidențialitate</a><a href="/termeni.html">Termeni și condiții</a><a href="/cookies.html">Cookie-uri</a></nav></footer>
         </div>
       </main>
     </div>
