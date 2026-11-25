@@ -6,7 +6,7 @@ type HelpRequest = {
   location: string | null; status: "open" | "closed"; created_at: string; author_name: string;
 };
 
-const categories = ["Comunitate", "Educație", "Sănătate", "Alimente și bunuri", "Transport", "Locuință", "Tehnologie", "Altele"];
+const defaultCategories = ["Comunitate", "Educație", "Sănătate", "Alimente și bunuri", "Transport", "Locuință", "Tehnologie", "Altele"];
 
 function HelpRequests({ userId }: { userId: string }) {
   const [categories, setCategories] = useState<string[]>(defaultCategories);
