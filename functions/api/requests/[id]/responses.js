@@ -1,4 +1,4 @@
-import { requireUser, json, validOrigin } from "../../../_utils/session.js";
+import { requireUser, json, validOrigin } from "../../_utils/session.js";
 
 function requestId(request) {
   const parts = new URL(request.url).pathname.split("/").filter(Boolean);
