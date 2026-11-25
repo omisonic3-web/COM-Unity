@@ -38,7 +38,7 @@ function randomHex(length = 32) {
 
 export async function onRequestPost({ request, env }) {
   const expiredCookie = `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`;
-  const headers = { "Set-Cookie": expiredCookie, "Cache-Control": "no-store" };
+  const headers = { "Cache-Control": "no-store" };
 
   if (!env.DB) return Response.json({ error: "Serviciul nu este disponibil." }, { status: 503, headers });
   if (!validOrigin(request)) return Response.json({ error: "Solicitare nepermisă." }, { status: 403, headers });
@@ -125,7 +125,7 @@ export async function onRequestPost({ request, env }) {
     return Response.json({
       ok: true,
       message: "Datele personale au fost anonimizate, iar mesajele private au fost șterse."
-    }, { status: 200, headers });
+    }, { status: 200, headers: { ...headers, "Set-Cookie": expiredCookie } });
   } catch (error) {
     console.error("COM-Unity account deletion failed:", error?.name || "Error");
     return Response.json({ error: "Contul nu a putut fi anonimizat. Încearcă din nou." }, { status: 500, headers });
