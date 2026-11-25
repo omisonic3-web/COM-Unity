@@ -16,7 +16,7 @@ export async function onRequestPatch({ request, env }) {
     return json({ error: "Date JSON invalide." }, 400);
   }
 
-  const displayName = typeof body?.displayName === "string" ? body.displayName.trim().replace(/\\s+/g, " ") : "";
+  const displayName = typeof body?.displayName === "string" ? body.displayName.trim().replace(/\s+/g, " ") : "";
   if (displayName.length < 2 || displayName.length > 80) {
     return json({ error: "Numele trebuie să aibă între 2 și 80 de caractere." }, 400);
   }
