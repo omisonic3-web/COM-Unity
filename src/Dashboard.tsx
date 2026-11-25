@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import HelpRequests from './HelpRequests';
 import HelpOffers from './HelpOffers';
 import Projects from './Projects';
@@ -44,6 +44,35 @@ const sectionCopy: Record<Section, { title: string; description: string }> = {
 
 function Dashboard({ user, onLogout, loading }: Props) {
   const [activeSection, setActiveSection] = useState<Section>('overview');
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [messageNotice, setMessageNotice] = useState<{ sender: string; message: string } | null>(null);
+  const latestUnreadId = useRef<string | null>(null);
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const refreshUnread = useCallback(async (notify = false) => {
+    try {
+      const response = await fetch('/api/messages?unread=1', { credentials: 'same-origin', cache: 'no-store' });
+      if (!response.ok) return;
+      const data = await response.json();
+      setUnreadCount(data.unread_count || 0);
+      const latest = data.latest;
+      if (latest?.id) {
+        if (latestUnreadId.current && latestUnreadId.current !== latest.id && notify) {
+          setMessageNotice({ sender: latest.sender_name || 'Membru', message: latest.message || 'Ți-a trimis un mesaj.' });
+          if (noticeTimer.current) clearTimeout(noticeTimer.current);
+          noticeTimer.current = setTimeout(() => setMessageNotice(null), 7000);
+        }
+        latestUnreadId.current = latest.id;
+      } else latestUnreadId.current = null;
+    } catch { /* notificările nu blochează dashboard-ul */ }
+  }, []);
+  const handleMessagesRead = useCallback(() => { void refreshUnread(false); }, [refreshUnread]);
+  useEffect(() => {
+    void refreshUnread(false);
+    const interval = setInterval(() => void refreshUnread(true), 15000);
+    const onVisible = () => { if (document.visibilityState === 'visible') void refreshUnread(true); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisible); if (noticeTimer.current) clearTimeout(noticeTimer.current); };
+  }, [refreshUnread]);
   const activeCopy = sectionCopy[activeSection];
 
   return (
@@ -65,6 +94,7 @@ function Dashboard({ user, onLogout, loading }: Props) {
               >
                 <Icon size={18} />
                 <span>{item.label}</span>
+                {item.id === "messages" && unreadCount > 0 && <span className="message-unread-badge" aria-label={`${unreadCount} mesaje necitite`}>{unreadCount > 99 ? "99+" : unreadCount}</span>}
                 {activeSection === item.id && <span className="nav-active-mark" />}
               </button>
             );
@@ -81,6 +111,11 @@ function Dashboard({ user, onLogout, loading }: Props) {
         </div>
       </aside>
 
+      {messageNotice && <div role="status" onClick={() => { setActiveSection("messages"); setMessageNotice(null); }} style={{ position: "fixed", zIndex: 1000, right: 22, top: 22, width: "min(360px, calc(100vw - 44px))", padding: "15px 18px", border: "1px solid #6bdff255", borderRadius: 14, background: "#14253af2", boxShadow: "0 16px 45px #0008", color: "#edf7ff", cursor: "pointer" }}>
+        <strong style={{ display: "block", marginBottom: 5 }}>Mesaj nou de la {messageNotice.sender}</strong>
+        <span style={{ display: "block", color: "#aebed2", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{messageNotice.message}</span>
+        <small style={{ display: "block", marginTop: 8, color: "#70dff2" }}>Apasă pentru a deschide mesajele</small>
+      </div>}
       <main className="dashboard-main">
         <header className="dashboard-topbar">
           <div className="dashboard-breadcrumb"><span>COM-Unity</span><ChevronRight size={14} /><strong>{activeCopy.title}</strong></div>
@@ -154,7 +189,7 @@ function Dashboard({ user, onLogout, loading }: Props) {
 
           {activeSection === 'projects' && <Projects userId={user.id} />}
 
-          {activeSection === 'messages' && <Messages userId={user.id} />}
+          {activeSection === 'messages' && <Messages userId={user.id} onRead={handleMessagesRead} />}
 
           {activeSection !== 'overview' && activeSection !== 'profile' && activeSection !== 'requests' && activeSection !== 'offers' && activeSection !== 'projects' && activeSection !== 'messages' && (
             <section className="dashboard-panel module-placeholder">
