@@ -153,6 +153,11 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
+  const [deletionOpen, setDeletionOpen] = useState(false);
+  const [deletionPassword, setDeletionPassword] = useState('');
+  const [deletionConfirmation, setDeletionConfirmation] = useState('');
+  const [deletionError, setDeletionError] = useState('');
+  const [deletionSaving, setDeletionSaving] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [messageNotice, setMessageNotice] = useState<{ sender: string; message: string } | null>(null);
   const [activityUnreadCount, setActivityUnreadCount] = useState(0);
@@ -273,6 +278,38 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
       setProfileError(error instanceof Error ? error.message : 'A apărut o eroare.');
     } finally {
       setProfileSaving(false);
+    }
+  }
+
+
+  async function deleteAccount(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (user.role === 'admin') {
+      setDeletionError('Conturile de administrator nu pot fi șterse înainte de transferul rolului.');
+      return;
+    }
+    if (deletionConfirmation !== 'ȘTERGE CONTUL') {
+      setDeletionError('Scrie exact ȘTERGE CONTUL pentru confirmare.');
+      return;
+    }
+    setDeletionSaving(true);
+    setDeletionError('');
+    try {
+      const response = await fetch('/api/account/delete', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: deletionPassword, confirmation: deletionConfirmation })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Contul nu a putut fi anonimizat.');
+      setDeletionPassword('');
+      setDeletionConfirmation('');
+      await onLogout();
+    } catch (error) {
+      setDeletionError(error instanceof Error ? error.message : 'A apărut o eroare. Încearcă din nou.');
+    } finally {
+      setDeletionSaving(false);
     }
   }
 
@@ -439,6 +476,39 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                     <div><strong>{user.displayName}</strong><span>{user.email}</span></div>
                   </div>
               <div className="profile-status"><span className="status-dot" /> Cont activ și email confirmat</div>
+
+              <section className="account-deletion-zone" aria-labelledby="account-deletion-title">
+                <div>
+                  <span className="account-deletion-kicker">ZONĂ DE SIGURANȚĂ</span>
+                  <h3 id="account-deletion-title">Ștergerea contului</h3>
+                  <p>Poți solicita anonimizarea datelor personale. Mesajele private trimise și primite vor fi șterse definitiv. Contribuțiile comunitare pot rămâne vizibile sub numele „Membru anonim”.</p>
+                </div>
+                {user.role === 'admin' ? (
+                  <p className="account-deletion-admin-note">Conturile de administrator sunt protejate. Transferă mai întâi rolul de administrator către alt cont, apoi poți solicita ștergerea.</p>
+                ) : !deletionOpen ? (
+                  <button type="button" className="button account-deletion-trigger" onClick={() => { setDeletionOpen(true); setDeletionError(''); }}>Solicită ștergerea contului</button>
+                ) : (
+                  <form className="account-deletion-form" onSubmit={deleteAccount}>
+                    <label>Parola actuală
+                      <input type="password" value={deletionPassword} onChange={event => setDeletionPassword(event.target.value)} autoComplete="current-password" maxLength={128} required />
+                    </label>
+                    <label>Scrie exact <strong>ȘTERGE CONTUL</strong> pentru confirmare
+                      <input type="text" value={deletionConfirmation} onChange={event => setDeletionConfirmation(event.target.value)} autoComplete="off" required />
+                    </label>
+                    <ul>
+                      <li>Mesajele private vor fi șterse definitiv.</li>
+                      <li>Profilul, emailul și datele de autentificare vor fi anonimizate.</li>
+                      <li>Cererile, ofertele, proiectele și evaluările comunitare vor fi păstrate sub identitatea „Membru anonim”.</li>
+                      <li>Unele texte publicate pot conține informații care te identifică și vor rămâne neschimbate.</li>
+                    </ul>
+                    {deletionError && <div className="requests-alert error" role="alert">{deletionError}</div>}
+                    <div className="request-form-footer">
+                      <button type="button" className="button button-outline" onClick={() => { setDeletionOpen(false); setDeletionPassword(''); setDeletionConfirmation(''); setDeletionError(''); }} disabled={deletionSaving}>Anulează</button>
+                      <button type="submit" className="button account-deletion-confirm" disabled={deletionSaving || !deletionPassword || deletionConfirmation !== 'ȘTERGE CONTUL'}>{deletionSaving ? 'Se procesează...' : 'Confirmă ștergerea definitivă'}</button>
+                    </div>
+                  </form>
+                )}
+              </section>
                   <button className="text-link" onClick={() => setActiveSection('profile')}>Vezi profilul <ArrowUpRight size={15} /></button>
                 </section>
               </div>
