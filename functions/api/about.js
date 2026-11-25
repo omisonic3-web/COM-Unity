@@ -5,7 +5,7 @@ const defaults = {
   intro: "COM-Unity este un spațiu digital dedicat oamenilor care cred în puterea colaborării și a solidarității.",
   mission: "Să conectăm oamenii care au nevoie de sprijin cu cei care pot oferi ajutor, timp, experiență sau resurse.",
   vision: "O comunitate în care implicarea, încrederea și cooperarea transformă inițiativele individuale în schimbări pozitive.",
-  values: "Solidaritate • Respect • Încredere • Implicare • Cooperare",
+  values_text: "Solidaritate • Respect • Încredere • Implicare • Cooperare",
   contact_email: "",
   contact_location: ""
 };
