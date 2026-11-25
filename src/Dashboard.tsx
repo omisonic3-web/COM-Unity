@@ -2,6 +2,7 @@ import { useState } from 'react';
 import HelpRequests from './HelpRequests';
 import HelpOffers from './HelpOffers';
 import Projects from './Projects';
+import Messages from './Messages';
 import {
   Globe2, LayoutDashboard, HandHeart, HeartHandshake, FolderKanban,
   MessageCircle, UserRound, LogOut, ArrowUpRight, Compass,
@@ -153,7 +154,9 @@ function Dashboard({ user, onLogout, loading }: Props) {
 
           {activeSection === 'projects' && <Projects userId={user.id} />}
 
-          {activeSection !== 'overview' && activeSection !== 'profile' && activeSection !== 'requests' && activeSection !== 'offers' && activeSection !== 'projects' && (
+          {activeSection === 'messages' && <Messages userId={user.id} />}
+
+          {activeSection !== 'overview' && activeSection !== 'profile' && activeSection !== 'requests' && activeSection !== 'offers' && activeSection !== 'projects' && activeSection !== 'messages' && (
             <section className="dashboard-panel module-placeholder">
               <div className="empty-icon"><Clock3 size={25} /></div>
               <span className="module-kicker">MODUL ÎN DEZVOLTARE</span>
