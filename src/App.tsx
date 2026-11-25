@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import Dashboard from './Dashboard';
 import {
   Globe2, HeartHandshake, Users, ShieldCheck, ArrowRight, HandHeart,
-  MessageCircle, FolderKanban, X, LogOut, UserRound, LoaderCircle
+  MessageCircle, FolderKanban, X, LoaderCircle
 } from 'lucide-react';
 
 type User = {
