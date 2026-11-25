@@ -18,6 +18,7 @@ function HelpOffers({ userId }: { userId: string }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [filter, setFilter] = useState<"all" | "mine">("all");
+  const [zoneSearch, setZoneSearch] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true); setError("");
@@ -85,7 +86,7 @@ function HelpOffers({ userId }: { userId: string }) {
     } catch (e) { setError(e instanceof Error ? e.message : "Eroare."); }
   }
 
-  const visible = filter === "mine" ? items.filter(item => item.user_id === userId) : items;
+  const visible = items.filter(item => (filter === "all" || item.user_id === userId) && (!zoneSearch.trim() || (item.location || "").toLocaleLowerCase("ro").includes(zoneSearch.trim().toLocaleLowerCase("ro"))));
 
   return <section className="help-requests-module">
     <div className="requests-toolbar">
@@ -93,6 +94,7 @@ function HelpOffers({ userId }: { userId: string }) {
         <button className={filter === "all" ? "selected" : ""} onClick={() => setFilter("all")}>Toate ofertele</button>
         <button className={filter === "mine" ? "selected" : ""} onClick={() => setFilter("mine")}>Ofertele mele</button>
       </div>
+      <label className="zone-search"><MapPin size={16}/><input type="search" value={zoneSearch} onChange={event => setZoneSearch(event.target.value)} placeholder="Caută după zonă sau localitate" aria-label="Caută oferte după zonă sau localitate"/>{zoneSearch && <button type="button" onClick={() => setZoneSearch("")} aria-label="Șterge căutarea"><X size={14}/></button>}</label>
       <div className="requests-toolbar-actions">
         <button className="requests-refresh" onClick={() => void load()} disabled={loading} aria-label="Reîncarcă"><RefreshCw size={17}/></button>
         <button className="button button-primary" onClick={() => { setShowForm(!showForm); setError(""); }}><Plus size={17}/> Publică o ofertă</button>
@@ -114,7 +116,7 @@ function HelpOffers({ userId }: { userId: string }) {
     </form>}
 
     {loading ? <div className="requests-empty">Se încarcă ofertele...</div> : visible.length === 0 ?
-      <div className="dashboard-panel requests-empty"><div className="empty-icon"><HeartHandshake size={24}/></div><h2>Nu există oferte de afișat</h2><p>{filter === "mine" ? "Nu ai publicat încă nicio ofertă." : "Fii primul care oferă ajutor comunității."}</p></div> :
+      <div className="dashboard-panel requests-empty"><div className="empty-icon"><HeartHandshake size={24}/></div><h2>Nu există oferte de afișat</h2><p>{filter === "mine" ? "Nu ai publicat încă nicio ofertă în această zonă." : zoneSearch ? "Nu există oferte în zona căutată." : "Fii primul care oferă ajutor comunității."}</p></div> :
       <div className="requests-list">{visible.map(item => <article className="dashboard-panel request-card" key={item.id}>
         <div className="request-card-top"><span className={item.status === "active" ? "request-status open" : "request-status closed"}>{item.status === "active" ? "Disponibilă" : "Indisponibilă"}</span><span className="request-category">{item.category}</span></div>
         <h2>{item.title}</h2><p className="request-description">{item.description}</p>
