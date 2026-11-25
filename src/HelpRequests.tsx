@@ -18,6 +18,7 @@ function HelpRequests({ userId }: { userId: string }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [filter, setFilter] = useState<"all" | "mine">("all");
+  const [zoneSearch, setZoneSearch] = useState("");
   const [expandedRequest, setExpandedRequest] = useState<string | null>(null);
   const [responses, setResponses] = useState<Record<string, { id: string; user_id: string; message: string; created_at: string; author_name: string }[]>>({});
   const [responseDraft, setResponseDraft] = useState("");
@@ -147,7 +148,7 @@ function HelpRequests({ userId }: { userId: string }) {
     finally { setSendingResponse(false); }
   }
 
-  const visible = filter === "mine" ? items.filter(item => item.user_id === userId) : items;
+  const visible = items.filter(item => (filter === "all" || item.user_id === userId) && (!zoneSearch.trim() || (item.location || "").toLocaleLowerCase("ro").includes(zoneSearch.trim().toLocaleLowerCase("ro"))));
 
   return <section className="help-requests-module">
     <div className="requests-toolbar">
@@ -155,6 +156,7 @@ function HelpRequests({ userId }: { userId: string }) {
         <button className={filter === "all" ? "selected" : ""} onClick={() => setFilter("all")}>Toate cererile</button>
         <button className={filter === "mine" ? "selected" : ""} onClick={() => setFilter("mine")}>Cererile mele</button>
       </div>
+      <label className="zone-search"><MapPin size={16}/><input type="search" value={zoneSearch} onChange={event => setZoneSearch(event.target.value)} placeholder="Caută după zonă sau localitate" aria-label="Caută cereri după zonă sau localitate"/>{zoneSearch && <button type="button" onClick={() => setZoneSearch("")} aria-label="Șterge căutarea"><X size={14}/></button>}</label>
       <div className="requests-toolbar-actions">
         <button className="requests-refresh" onClick={() => void load()} disabled={loading} aria-label="Reîncarcă"><RefreshCw size={17}/></button>
         <button className="button button-primary" onClick={() => { setShowForm(!showForm); setError(""); }}><Plus size={17}/> Publică o cerere</button>
@@ -176,7 +178,7 @@ function HelpRequests({ userId }: { userId: string }) {
     </form>}
 
     {loading ? <div className="requests-empty">Se încarcă cererile...</div> : visible.length === 0 ?
-      <div className="dashboard-panel requests-empty"><div className="empty-icon"><Circle size={24}/></div><h2>Nu există cereri de afișat</h2><p>{filter === "mine" ? "Nu ai publicat încă nicio cerere." : "Fii primul care publică o cerere de ajutor în comunitate."}</p></div> :
+      <div className="dashboard-panel requests-empty"><div className="empty-icon"><Circle size={24}/></div><h2>Nu există cereri de afișat</h2><p>{filter === "mine" ? "Nu ai publicat încă nicio cerere în această zonă." : zoneSearch ? "Nu există cereri în zona căutată." : "Fii primul care publică o cerere de ajutor în comunitate."}</p></div> :
       <div className="requests-list">{visible.map(item => <article className="dashboard-panel request-card" key={item.id}>
         <div className="request-card-top"><span className={item.status === "open" ? "request-status open" : "request-status closed"}>{item.status === "open" ? "Deschisă" : "Închisă"}</span><span className="request-category">{item.category}</span></div>
         <h2>{item.title}</h2><p className="request-description">{item.description}</p>
