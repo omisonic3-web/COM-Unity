@@ -1,12 +1,6 @@
-import { requireUser, json, validOrigin } from "../_utils/session.js";
+import { requireUser, validOrigin } from "../_utils/session.js";
 
 const COOKIE_NAME = "__Host-comunity_session";
-
-function toBase64(bytes) {
-  let binary = "";
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary);
-}
 
 function fromBase64(value) {
   const binary = atob(value);
