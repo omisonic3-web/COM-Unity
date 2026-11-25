@@ -42,7 +42,7 @@ function Leaderboard({ userId }: Props) {
   useEffect(() => { void load(); }, [load]);
 
   const ranked = useMemo(() => {
-    const eligible = mode === "appreciated" ? members.filter(member => member.ratingCount > 0) : members;
+    const eligible = mode === "appreciated" ? members.filter(member => member.ratingCount > 0) : members.filter(member => member.completedProjects > 0);
     return [...eligible].sort((a, b) => mode === "active"
       ? b.completedProjects - a.completedProjects || b.ratingAverage - a.ratingAverage || b.ratingCount - a.ratingCount || a.displayName.localeCompare(b.displayName, "ro")
       : b.ratingAverage - a.ratingAverage || b.ratingCount - a.ratingCount || b.completedProjects - a.completedProjects || a.displayName.localeCompare(b.displayName, "ro")
