@@ -6,7 +6,7 @@ import Messages from './Messages';
 import {
   Globe2, LayoutDashboard, HandHeart, HeartHandshake, FolderKanban,
   MessageCircle, UserRound, LogOut, ArrowUpRight, Compass,
-  ShieldCheck, Clock3, ChevronRight
+  ShieldCheck, Clock3, ChevronRight, Bell
 } from 'lucide-react';
 
 type DashboardUser = {
@@ -46,6 +46,10 @@ function Dashboard({ user, onLogout, loading }: Props) {
   const [activeSection, setActiveSection] = useState<Section>('overview');
   const [unreadCount, setUnreadCount] = useState(0);
   const [messageNotice, setMessageNotice] = useState<{ sender: string; message: string } | null>(null);
+  const [activityUnreadCount, setActivityUnreadCount] = useState(0);
+  const [activityNotice, setActivityNotice] = useState<{ id: string; title: string; message: string; actor: string; entityType: string | null } | null>(null);
+  const latestActivityId = useRef<string | null>(null);
+  const activityNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestUnreadId = useRef<string | null>(null);
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const refreshUnread = useCallback(async (notify = false) => {
@@ -66,13 +70,54 @@ function Dashboard({ user, onLogout, loading }: Props) {
     } catch { /* notificările nu blochează dashboard-ul */ }
   }, []);
   const handleMessagesRead = useCallback(() => { void refreshUnread(false); }, [refreshUnread]);
+  const refreshNotifications = useCallback(async (notify = false) => {
+    try {
+      const response = await fetch('/api/notifications', { credentials: 'same-origin', cache: 'no-store' });
+      if (!response.ok) return;
+      const data = await response.json();
+      setActivityUnreadCount(data.unread_count || 0);
+      const latest = (data.notifications || []).find((item: { read_at: string | null }) => !item.read_at);
+      if (latest?.id) {
+        if (latestActivityId.current && latestActivityId.current !== latest.id && notify) {
+          setActivityNotice({
+            id: latest.id,
+            title: latest.title || 'Activitate nouă',
+            message: latest.message || 'Ai o notificare nouă.',
+            actor: latest.actor_name || 'Membru',
+            entityType: latest.entity_type || null
+          });
+          if (activityNoticeTimer.current) clearTimeout(activityNoticeTimer.current);
+          activityNoticeTimer.current = setTimeout(() => setActivityNotice(null), 8000);
+        }
+        latestActivityId.current = latest.id;
+      } else latestActivityId.current = null;
+    } catch { /* notificările nu blochează dashboard-ul */ }
+  }, []);
+  const openActivityNotice = useCallback(async () => {
+    if (!activityNotice) return;
+    try {
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: activityNotice.id })
+      });
+    } catch { /* starea se va sincroniza la următoarea verificare */ }
+    setActivityUnreadCount(count => Math.max(0, count - 1));
+    setActiveSection(activityNotice.entityType === 'project' ? 'projects' : 'overview');
+    setActivityNotice(null);
+  }, [activityNotice]);
   useEffect(() => {
     void refreshUnread(false);
-    const interval = setInterval(() => void refreshUnread(true), 15000);
-    const onVisible = () => { if (document.visibilityState === 'visible') void refreshUnread(true); };
+    void refreshNotifications(false);
+    const interval = setInterval(() => {
+      void refreshUnread(true);
+      void refreshNotifications(true);
+    }, 15000);
+    const onVisible = () => { if (document.visibilityState === 'visible') { void refreshUnread(true); void refreshNotifications(true); } };
     document.addEventListener('visibilitychange', onVisible);
-    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisible); if (noticeTimer.current) clearTimeout(noticeTimer.current); };
-  }, [refreshUnread]);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisible); if (noticeTimer.current) clearTimeout(noticeTimer.current); if (activityNoticeTimer.current) clearTimeout(activityNoticeTimer.current); };
+  }, [refreshUnread, refreshNotifications]);
   const activeCopy = sectionCopy[activeSection];
 
   return (
@@ -116,10 +161,19 @@ function Dashboard({ user, onLogout, loading }: Props) {
         <span style={{ display: "block", color: "#aebed2", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{messageNotice.message}</span>
         <small style={{ display: "block", marginTop: 8, color: "#70dff2" }}>Apasă pentru a deschide mesajele</small>
       </div>}
+      {activityNotice && <div role="status" onClick={() => void openActivityNotice()} style={{ position: "fixed", zIndex: 1001, right: 22, top: messageNotice ? 112 : 22, width: "min(360px, calc(100vw - 44px))", padding: "15px 18px", border: "1px solid #a78bfa66", borderRadius: 14, background: "#1b1935f5", boxShadow: "0 16px 45px #0008", color: "#f3efff", cursor: "pointer" }}>
+        <strong style={{ display: "block", marginBottom: 5 }}>{activityNotice.title}</strong>
+        <span style={{ display: "block", color: "#c5bfdc", fontSize: 12 }}>{activityNotice.actor}: {activityNotice.message}</span>
+        <small style={{ display: "block", marginTop: 8, color: "#b9a4ff" }}>Apasă pentru a vedea activitatea</small>
+      </div>}
       <main className="dashboard-main">
         <header className="dashboard-topbar">
           <div className="dashboard-breadcrumb"><span>COM-Unity</span><ChevronRight size={14} /><strong>{activeCopy.title}</strong></div>
           <div className="dashboard-account">
+            <button type="button" aria-label={activityUnreadCount ? `${activityUnreadCount} notificări necitite` : "Notificări"} onClick={() => { void refreshNotifications(false); }} style={{ position: "relative", border: 0, background: "transparent", color: "inherit", cursor: "pointer", padding: 8 }}>
+              <Bell size={19} />
+              {activityUnreadCount > 0 && <span className="message-unread-badge" style={{ position: "absolute", top: -2, right: -3 }}>{activityUnreadCount > 99 ? "99+" : activityUnreadCount}</span>}
+            </button>
             <div className="account-avatar">{user.displayName.trim().charAt(0).toUpperCase() || 'U'}</div>
             <div className="account-meta">
               <strong>{user.displayName}</strong>
