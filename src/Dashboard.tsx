@@ -80,7 +80,6 @@ const avatarOptions = [
 function AvatarIllustration({ avatarId, size = 56 }: { avatarId: string; size?: number }) {
   const avatar = avatarOptions.find(item => item.id === avatarId) || avatarOptions[0];
   const kind = avatar.kind;
-  const hasGlasses = kind === 'engineer' || kind === 'agritech';
   return (
     <svg className="avatar-illustration" width={size} height={size} viewBox="0 0 100 100" role="img" aria-label={avatar.label}>
       <defs>
