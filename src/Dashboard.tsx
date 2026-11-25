@@ -80,9 +80,7 @@ const avatarOptions = [
 function AvatarIllustration({ avatarId, size = 56 }: { avatarId: string; size?: number }) {
   const avatar = avatarOptions.find(item => item.id === avatarId) || avatarOptions[0];
   const kind = avatar.kind;
-  const hasHat = kind === 'farmer' || kind === 'tractor';
   const hasGlasses = kind === 'engineer' || kind === 'agritech';
-  const isWoman = ['horticulture', 'manager', 'beekeeper', 'agritech'].includes(kind);
   return (
     <svg className="avatar-illustration" width={size} height={size} viewBox="0 0 100 100" role="img" aria-label={avatar.label}>
       <defs>
@@ -103,7 +101,7 @@ function AvatarIllustration({ avatarId, size = 56 }: { avatarId: string; size?: 
       {kind === 'agritech' && <g><rect x="76" y="45" width="13" height="17" rx="2" fill="#304c66" stroke="#d7efff" strokeWidth="1.5"/><path d="M79 50h7M79 54h5" stroke="#8ed6e8" strokeWidth="1.5"/></g>}
       {kind === 'student' && <g><path d="M72 49l12-5 12 5-12 5z" fill="#e8e1c8"/><path d="M84 54v8" stroke="#b9a982" strokeWidth="2"/><path d="M73 49v7" stroke="#b9a982" strokeWidth="2"/></g>}
       <path d="M13 100q2-27 23-32h28q21 5 23 32z" fill={'url(#avatar-shirt-' + avatar.id + ')'} />
-      {kind === 'engineer' && <path d="M39 70h22l8 30H31z" fill="#e9c84f"/ >}
+      {kind === 'engineer' && <path d="M39 70h22l8 30H31z" fill="#e9c84f"/>}
       {kind === 'manager' && <path d="M35 72l15 9 15-9-5 28H40z" fill="#e7dfd1" opacity=".9"/>}
       {kind === 'beekeeper' && <path d="M24 72q26 10 52 0l-5 28H29z" fill="#f2d67a" opacity=".85"/>}
       <path d="M43 57h14v17H43z" fill={avatar.skin}/>
