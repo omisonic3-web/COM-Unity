@@ -6,10 +6,11 @@ import Projects from './Projects';
 import Messages from './Messages';
 import AdminPanel from './AdminPanel';
 import UsefulLinks from './UsefulLinks';
+import AboutUs from './AboutUs';
 import {
   Globe2, LayoutDashboard, HandHeart, HeartHandshake, FolderKanban,
   MessageCircle, UserRound, LogOut, ArrowUpRight, Compass,
-  ShieldCheck, Clock3, ChevronRight, Bell, Pencil, Save, Link2
+  ShieldCheck, Clock3, ChevronRight, Bell, Pencil, Save, Link2, Info
 } from 'lucide-react';
 
 type DashboardUser = {
@@ -26,7 +27,7 @@ type Props = {
   onProfileUpdated: (displayName: string) => void;
 };
 
-type Section = 'overview' | 'requests' | 'offers' | 'projects' | 'messages' | 'profile' | 'links' | 'admin';
+type Section = 'overview' | 'requests' | 'offers' | 'projects' | 'messages' | 'profile' | 'links' | 'about' | 'admin';
 
 const navigation: { id: Section; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Prezentare generală', icon: LayoutDashboard },
@@ -36,6 +37,7 @@ const navigation: { id: Section; label: string; icon: typeof LayoutDashboard }[]
   { id: 'messages', label: 'Mesaje', icon: MessageCircle },
   { id: 'profile', label: 'Profilul meu', icon: UserRound },
   { id: 'links', label: 'Linkuri utile', icon: Link2 },
+  { id: 'about', label: 'Despre noi', icon: Info },
   { id: 'admin', label: 'Administrator', icon: ShieldCheck }
 ];
 
@@ -47,6 +49,7 @@ const sectionCopy: Record<Section, { title: string; description: string }> = {
   messages: { title: 'Mesaje', description: 'Comunicarea cu membrii comunității.' },
   profile: { title: 'Profilul meu', description: 'Informațiile contului tău COM-Unity.' },
   links: { title: 'Linkuri utile', description: 'Resurse și pagini recomandate pentru comunitatea COM-Unity.' },
+  about: { title: 'Despre noi', description: 'Află mai multe despre misiunea, viziunea și valorile COM-Unity.' },
   admin: { title: 'Panou de administrare', description: 'Administrarea centralizată a platformei COM-Unity.' }
 };
 
@@ -333,10 +336,11 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
           {activeSection === 'messages' && <Messages userId={user.id} onRead={handleMessagesRead} />}
 
           {activeSection === 'links' && <UsefulLinks />}
+          {activeSection === 'about' && <AboutUs />}
 
           {activeSection === 'admin' && user.role === 'admin' && <AdminPanel />}
 
-          {activeSection !== 'overview' && activeSection !== 'profile' && activeSection !== 'requests' && activeSection !== 'offers' && activeSection !== 'projects' && activeSection !== 'messages' && activeSection !== 'links' && activeSection !== 'admin' && (
+          {activeSection !== 'overview' && activeSection !== 'profile' && activeSection !== 'requests' && activeSection !== 'offers' && activeSection !== 'projects' && activeSection !== 'messages' && activeSection !== 'links' && activeSection !== 'about' && activeSection !== 'admin' && (
             <section className="dashboard-panel module-placeholder">
               <div className="empty-icon"><Clock3 size={25} /></div>
               <span className="module-kicker">MODUL ÎN DEZVOLTARE</span>
