@@ -58,7 +58,7 @@ export async function onRequestGet({ request, env }) {
       LEFT JOIN rating_totals rt ON rt.user_id = u.id
       WHERE COALESCE(u.role, 'user') != 'admin'
       ORDER BY completed_projects DESC, rating_average DESC, rating_count DESC, u.display_name COLLATE NOCASE ASC
-      LIMIT 100
+      LIMIT 500
     `).all();
 
     return json({
