@@ -17,9 +17,25 @@ export async function onRequestPost({ request, env }) {
     if (!project) return json({ error: "Proiectul nu a fost găsit." }, 404);
     if (project.status !== "active") return json({ error: "Înscrierile sunt închise pentru acest proiect." }, 409);
     if (project.user_id === auth.user.id) return json({ error: "Ești organizatorul acestui proiect." }, 409);
-    await env.DB.prepare(
+    const joined = await env.DB.prepare(
       "INSERT OR IGNORE INTO project_members (project_id, user_id) VALUES (?, ?)"
     ).bind(id, auth.user.id).run();
+    if (joined.meta?.changes && project.user_id) {
+      const actor = await env.DB.prepare(
+        "SELECT display_name FROM users WHERE id = ?"
+      ).bind(auth.user.id).first();
+      await env.DB.prepare(`
+        INSERT INTO notifications
+          (id, user_id, actor_id, type, title, message, entity_type, entity_id)
+        VALUES (?, ?, ?, 'project_join', 'Membru nou în proiect', ?, 'project', ?)
+      `).bind(
+        crypto.randomUUID(),
+        project.user_id,
+        auth.user.id,
+        `${actor?.display_name || "Un membru"} s-a înscris la proiectul tău.`,
+        id
+      ).run();
+    }
     return json({ ok: true });
   } catch (error) {
     console.error("COM-Unity project join failed:", error);
