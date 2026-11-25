@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import HelpRequests from './HelpRequests';
 import HelpOffers from './HelpOffers';
 import Projects from './Projects';
@@ -190,16 +191,7 @@ function Dashboard({ user, onLogout, loading }: Props) {
         <span style={{ display: "block", color: "#c5bfdc", fontSize: 12 }}>{activityNotice.actor}: {activityNotice.message}</span>
         <small style={{ display: "block", marginTop: 8, color: "#b9a4ff" }}>Apasă pentru a vedea activitatea</small>
       </div>}
-      <main className="dashboard-main">
-        <header className="dashboard-topbar">
-          <div className="dashboard-breadcrumb"><span>COM-Unity</span><ChevronRight size={14} /><strong>{activeCopy.title}</strong></div>
-          <div className="dashboard-account">
-            <div style={{ position: "relative" }}>
-              <button type="button" aria-label={activityUnreadCount ? `${activityUnreadCount} notificări necitite` : "Notificări"} aria-expanded={notificationsOpen} onClick={() => { setNotificationsOpen(open => !open); void refreshNotifications(false); }} style={{ position: "relative", border: 0, background: "transparent", color: "inherit", cursor: "pointer", padding: 8 }}>
-                <Bell size={19} />
-                {activityUnreadCount > 0 && <span className="message-unread-badge" style={{ position: "absolute", top: -2, right: -3 }}>{activityUnreadCount > 99 ? "99+" : activityUnreadCount}</span>}
-              </button>
-              {notificationsOpen && <div role="dialog" aria-label="Notificări" style={{ position: "fixed", zIndex: 99999, top: 76, right: 24, width: "min(370px, calc(100vw - 32px))", maxHeight: "min(430px, calc(100vh - 96px))", overflowY: "auto", padding: 12, border: "1px solid #34445c", borderRadius: 16, background: "#111d2d", color: "#edf4ff", boxShadow: "0 18px 50px #0009" }}>
+      {notificationsOpen && createPortal(<div role="dialog" aria-label="Notificări" style={{ position: "fixed", zIndex: 2147483647, top: 76, right: 24, width: "min(370px, calc(100vw - 32px))", maxHeight: "min(430px, calc(100vh - 96px))", overflowY: "auto", padding: 12, border: "1px solid #34445c", borderRadius: 16, background: "#111d2d", color: "#edf4ff", boxShadow: "0 18px 50px #0009" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 6px 12px" }}>
                   <strong>Notificări</strong>
                   <button type="button" onClick={() => setNotificationsOpen(false)} aria-label="Închide notificările" style={{ border: 0, background: "transparent", color: "#aebed2", cursor: "pointer", fontSize: 20 }}>×</button>
@@ -215,7 +207,17 @@ function Dashboard({ user, onLogout, loading }: Props) {
                   </button>
                 ))}
                 {activityUnreadCount > 0 && <button type="button" onClick={async () => { await fetch('/api/notifications', { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ all: true }) }); await refreshNotifications(false); }} style={{ width: "100%", padding: 9, border: 0, borderRadius: 9, background: "#263957", color: "#dce8ff", cursor: "pointer", fontSize: 12 }}>Marchează toate ca citite</button>}
-              </div>}
+              </div>, document.body)}
+      <main className="dashboard-main">
+        <header className="dashboard-topbar">
+          <div className="dashboard-breadcrumb"><span>COM-Unity</span><ChevronRight size={14} /><strong>{activeCopy.title}</strong></div>
+          <div className="dashboard-account">
+            <div style={{ position: "relative" }}>
+              <button type="button" aria-label={activityUnreadCount ? `${activityUnreadCount} notificări necitite` : "Notificări"} aria-expanded={notificationsOpen} onClick={() => { setNotificationsOpen(open => !open); void refreshNotifications(false); }} style={{ position: "relative", border: 0, background: "transparent", color: "inherit", cursor: "pointer", padding: 8 }}>
+                <Bell size={19} />
+                {activityUnreadCount > 0 && <span className="message-unread-badge" style={{ position: "absolute", top: -2, right: -3 }}>{activityUnreadCount > 99 ? "99+" : activityUnreadCount}</span>}
+              </button>
+
             </div>
             <div className="account-avatar">{user.displayName.trim().charAt(0).toUpperCase() || 'U'}</div>
             <div className="account-meta">
