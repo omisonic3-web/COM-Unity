@@ -464,3 +464,178 @@ footer .brand {
     animation-duration: .01ms !important;
   }
 }
+
+
+/* Authentication and account interface */
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 190px;
+  overflow: hidden;
+  color: #b9c9df;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.global-message {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0 0;
+  padding: 14px 17px;
+  border: 1px solid #ffffff20;
+  border-radius: 13px;
+  font-size: 13px;
+  line-height: 1.6;
+  backdrop-filter: blur(18px);
+}
+.global-message button, .modal-close {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 3px;
+  color: inherit;
+  background: transparent;
+  border: 0;
+}
+.message-success { color: #a4f0cf; background: #2b9c7020; border-color: #61dca044; }
+.message-error { color: #ffb5b5; background: #b9474720; border-color: #f0808044; }
+
+.modal-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 24px;
+  background: #030712c9;
+  backdrop-filter: blur(12px);
+  animation: fade-in .2s ease;
+}
+.auth-modal {
+  position: relative;
+  width: min(100%, 460px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 36px;
+  color: #f4f7ff;
+  border: 1px solid #ffffff24;
+  border-radius: 25px;
+  background: linear-gradient(145deg, #1b2a40f5, #101827f5);
+  box-shadow: 0 30px 100px #0009;
+  animation: modal-in .25s ease;
+}
+.modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 36px;
+  height: 36px;
+  color: #aab8cc;
+  border: 1px solid #ffffff1c;
+  border-radius: 10px;
+}
+.modal-close:hover { color: white; background: #ffffff12; }
+.auth-mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 23px;
+  color: #6be2f6;
+  border: 1px solid #5ee3f54a;
+  border-radius: 16px;
+  background: #5ee3f51b;
+}
+.auth-modal h2 {
+  margin: 12px 0 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 31px;
+  letter-spacing: -1px;
+}
+.auth-subtitle {
+  margin: 0 0 25px;
+  color: #9eacc2;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.auth-modal form { display: grid; gap: 17px; }
+.auth-modal form > label {
+  display: grid;
+  gap: 8px;
+  color: #dce6f5;
+  font-size: 13px;
+  font-weight: 600;
+}
+.auth-modal input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  color: #f4f7ff;
+  outline: none;
+  border: 1px solid #ffffff24;
+  border-radius: 11px;
+  background: #ffffff09;
+  font: inherit;
+  font-size: 14px;
+  transition: border-color .2s, background .2s;
+}
+.auth-modal input::placeholder { color: #75869f; }
+.auth-modal input:focus {
+  border-color: #62dff3;
+  background: #ffffff10;
+  box-shadow: 0 0 0 3px #62dff31c;
+}
+.auth-submit { width: 100%; min-height: 49px; margin-top: 4px; }
+.auth-submit:disabled, .nav-actions button:disabled { opacity: .65; cursor: wait; }
+.form-error {
+  margin: 0;
+  padding: 11px 13px;
+  color: #ffb5b5;
+  border: 1px solid #f0808044;
+  border-radius: 10px;
+  background: #b9474720;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.auth-switch {
+  margin: 23px 0 0;
+  color: #9eacc2;
+  text-align: center;
+  font-size: 13px;
+}
+.auth-switch button {
+  padding: 0;
+  color: #69dff5;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+}
+.auth-switch button:hover { text-decoration: underline; }
+.auth-legal {
+  margin: 18px 0 0;
+  color: #71829a;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.honeypot {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
+.spin { animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-in { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+@media (max-width: 520px) {
+  .auth-modal { padding: 30px 22px; }
+  .user-chip { display: none; }
+}
