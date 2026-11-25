@@ -104,9 +104,10 @@ function Dashboard({ user, onLogout, loading }: Props) {
       });
     } catch { /* starea se va sincroniza la următoarea verificare */ }
     setActivityUnreadCount(count => Math.max(0, count - 1));
+    await refreshNotifications(false);
     setActiveSection(activityNotice.entityType === 'project' ? 'projects' : 'overview');
     setActivityNotice(null);
-  }, [activityNotice]);
+  }, [activityNotice, refreshNotifications]);
   useEffect(() => {
     void refreshUnread(false);
     void refreshNotifications(false);
