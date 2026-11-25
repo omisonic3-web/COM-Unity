@@ -8,10 +8,11 @@ import AdminPanel from './AdminPanel';
 import UsefulLinks from './UsefulLinks';
 import AboutUs from './AboutUs';
 import Reports from './Reports';
+import Leaderboard from './Leaderboard';
 import {
   Globe2, LayoutDashboard, HandHeart, HeartHandshake, FolderKanban,
   MessageCircle, UserRound, LogOut, ArrowUpRight, Compass,
-  ShieldCheck, Clock3, ChevronRight, Bell, Pencil, Save, Link2, Info, House, Palette
+  ShieldCheck, Clock3, ChevronRight, Bell, Pencil, Save, Link2, Info, House, Palette, Trophy
 } from 'lucide-react';
 
 type DashboardUser = {
@@ -28,13 +29,14 @@ type Props = {
   onProfileUpdated: (displayName: string) => void;
 };
 
-type Section = 'overview' | 'requests' | 'offers' | 'projects' | 'messages' | 'profile' | 'links' | 'about' | 'reports' | 'admin';
+type Section = 'overview' | 'requests' | 'offers' | 'projects' | 'leaderboard' | 'messages' | 'profile' | 'links' | 'about' | 'reports' | 'admin';
 
 const navigation: { id: Section; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Prezentare generală', icon: LayoutDashboard },
   { id: 'requests', label: 'Cereri de ajutor', icon: HandHeart },
   { id: 'offers', label: 'Oferte de ajutor', icon: HeartHandshake },
   { id: 'projects', label: 'Proiecte', icon: FolderKanban },
+  { id: 'leaderboard', label: 'Clasamentul comunității', icon: Trophy },
   { id: 'messages', label: 'Mesaje', icon: MessageCircle },
   { id: 'profile', label: 'Profilul meu', icon: UserRound },
   { id: 'links', label: 'Linkuri utile', icon: Link2 },
@@ -48,6 +50,7 @@ const sectionCopy: Record<Section, { title: string; description: string }> = {
   requests: { title: 'Cereri de ajutor', description: 'Descoperă unde este nevoie de sprijin sau gestionează cererile tale.' },
   offers: { title: 'Oferte de ajutor', description: 'Împărtășește timpul, experiența și resursele tale.' },
   projects: { title: 'Proiecte comunitare', description: 'Idei care aduc oamenii împreună și produc schimbări reale.' },
+  leaderboard: { title: 'Clasamentul comunității', description: 'Descoperă membrii care se implică și sunt apreciați de comunitate.' },
   messages: { title: 'Mesaje', description: 'Comunicarea cu membrii comunității.' },
   profile: { title: 'Profilul meu', description: 'Informațiile contului tău COM-Unity.' },
   links: { title: 'Linkuri utile', description: 'Resurse și pagini recomandate pentru comunitatea COM-Unity.' },
@@ -448,6 +451,8 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
 
           {activeSection === 'projects' && <Projects userId={user.id} />}
 
+          {activeSection === 'leaderboard' && <Leaderboard userId={user.id} />}
+
           {activeSection === 'messages' && <Messages userId={user.id} onRead={handleMessagesRead} />}
 
           {activeSection === 'links' && <UsefulLinks />}
@@ -456,7 +461,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
 
           {activeSection === 'admin' && user.role === 'admin' && <AdminPanel />}
 
-          {activeSection !== 'overview' && activeSection !== 'profile' && activeSection !== 'requests' && activeSection !== 'offers' && activeSection !== 'projects' && activeSection !== 'messages' && activeSection !== 'links' && activeSection !== 'about' && activeSection !== 'reports' && activeSection !== 'admin' && (
+          {activeSection !== 'overview' && activeSection !== 'profile' && activeSection !== 'requests' && activeSection !== 'offers' && activeSection !== 'projects' && activeSection !== 'leaderboard' && activeSection !== 'messages' && activeSection !== 'links' && activeSection !== 'about' && activeSection !== 'reports' && activeSection !== 'admin' && (
             <section className="dashboard-panel module-placeholder">
               <div className="empty-icon"><Clock3 size={25} /></div>
               <span className="module-kicker">MODUL ÎN DEZVOLTARE</span>
