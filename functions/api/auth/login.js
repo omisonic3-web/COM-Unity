@@ -1,3 +1,4 @@
+import { validOrigin } from "../_utils/session.js";
 
 const SESSION_DAYS = 30;
 const COOKIE_NAME = "__Host-comunity_session";
@@ -130,6 +131,13 @@ async function verifyPassword(password, storedHash) {
 }
 
 export async function onRequestPost({ request, env }) {
+  if (!validOrigin(request)) {
+    return Response.json(
+      { error: "Originea cererii nu este permisă." },
+      { status: 403, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
   if (!env.DB) {
     return Response.json(
       { error: "Database unavailable" },
