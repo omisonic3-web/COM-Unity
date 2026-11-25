@@ -6,7 +6,7 @@ type HelpOffer = {
   location: string | null; status: "active" | "closed"; created_at: string; author_name: string;
 };
 
-const categories = ["Comunitate", "Educație", "Sănătate", "Alimente și bunuri", "Transport", "Locuință", "Tehnologie", "Reparații și servicii", "Altele"];
+const defaultCategories = ["Comunitate", "Educație", "Sănătate", "Alimente și bunuri", "Transport", "Locuință", "Tehnologie", "Reparații și servicii", "Altele"];
 
 function HelpOffers({ userId }: { userId: string }) {
   const [categories, setCategories] = useState<string[]>(defaultCategories);
