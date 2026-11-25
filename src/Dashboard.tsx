@@ -65,24 +65,68 @@ const interfaceThemes: { id: InterfaceTheme; label: string; description: string 
 ];
 
 
-const avatarOptions = [{"id":"person-1","bg":"#dbeafe","skin":"#c9825b","hair":"#3c2b27","shirt":"#3978b9"},{"id":"person-2","bg":"#fce7f3","skin":"#f0bd91","hair":"#70412e","shirt":"#bd5684"},{"id":"person-3","bg":"#dcfce7","skin":"#8f563d","hair":"#201d1b","shirt":"#23876d"},{"id":"person-4","bg":"#ede9fe","skin":"#e6ad83","hair":"#342b50","shirt":"#7257b8"},{"id":"person-5","bg":"#fef3c7","skin":"#f3c9a5","hair":"#b66a36","shirt":"#d28a32"},{"id":"person-6","bg":"#cffafe","skin":"#a9684e","hair":"#171c2b","shirt":"#328b9b"},{"id":"person-7","bg":"#ffe4e6","skin":"#e4b18c","hair":"#5a3328","shirt":"#c45e69"},{"id":"person-8","bg":"#e0e7ff","skin":"#9b6248","hair":"#26242a","shirt":"#5268a8"}];
+const avatarOptions = [
+  { id: 'person-1', label: 'Fermier tradițional · 50 ani', bg: '#d9edff', skin: '#b8754e', hair: '#4a3025', shirt: '#3c6d9c', kind: 'farmer' },
+  { id: 'person-2', label: 'Horticultoare · 25 ani', bg: '#e1f4d9', skin: '#e8b58d', hair: '#633a2c', shirt: '#397b68', kind: 'horticulture' },
+  { id: 'person-3', label: 'Inginer agronom · 35 ani', bg: '#dcecff', skin: '#c78b68', hair: '#352b29', shirt: '#244f78', kind: 'engineer' },
+  { id: 'person-4', label: 'Manager de fermă · 45 ani', bg: '#f6e8d8', skin: '#e0ad8b', hair: '#9b8b7b', shirt: '#8c7665', kind: 'manager' },
+  { id: 'person-5', label: 'Tractorist · 28 ani', bg: '#f9e8c9', skin: '#c98762', hair: '#382b25', shirt: '#405b70', kind: 'tractor' },
+  { id: 'person-6', label: 'Apicultoare · 30 ani', bg: '#fff0c9', skin: '#9c6148', hair: '#211a1b', shirt: '#d8b65b', kind: 'beekeeper' },
+  { id: 'person-7', label: 'Viticultor · 65 ani', bg: '#e6efd9', skin: '#d6a17d', hair: '#e5e3db', shirt: '#806b58', kind: 'vintner' },
+  { id: 'person-8', label: 'Specialistă agrotech · 32 ani', bg: '#dceeff', skin: '#c58a6c', hair: '#34282c', shirt: '#527da8', kind: 'agritech' },
+  { id: 'person-9', label: 'Student la agronomie · 21 ani', bg: '#e4f2dc', skin: '#d6a17f', hair: '#503326', shirt: '#3c8068', kind: 'student' }
+] as const;
+
 function AvatarIllustration({ avatarId, size = 56 }: { avatarId: string; size?: number }) {
   const avatar = avatarOptions.find(item => item.id === avatarId) || avatarOptions[0];
-  const gradientId = 'avatar-bg-' + avatar.id;
+  const kind = avatar.kind;
+  const hasHat = kind === 'farmer' || kind === 'tractor';
+  const hasGlasses = kind === 'engineer' || kind === 'agritech';
+  const isWoman = ['horticulture', 'manager', 'beekeeper', 'agritech'].includes(kind);
   return (
-    <svg className="avatar-illustration" width={size} height={size} viewBox="0 0 80 80" role="img" aria-label="Avatar ilustrat">
-      <defs><linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor={avatar.bg}/><stop offset="100%" stopColor="#ffffff"/></linearGradient></defs>
-      <circle cx="40" cy="40" r="40" fill={'url(#' + gradientId + ')'} />
-      <path d="M8 80c2-17 14-26 32-26s30 9 32 26" fill={avatar.shirt}/>
-      <path d="M32 49h16v13H32z" fill={avatar.skin}/>
-      <ellipse cx="40" cy="34" rx="18" ry="21" fill={avatar.skin}/>
-      <path d="M22 33c-2-17 7-26 20-26 13 0 20 10 17 27-3-7-7-10-12-12-8 7-16 8-25 7z" fill={avatar.hair}/>
-      <path d="M23 31c-4 3-4 9 0 12M57 31c4 3 4 9 0 12" fill="none" stroke={avatar.skin} strokeWidth="5" strokeLinecap="round"/>
-      <circle cx="33" cy="36" r="1.6" fill="#29252a"/><circle cx="47" cy="36" r="1.6" fill="#29252a"/>
-      <path d="M35 45q5 4 10 0" fill="none" stroke="#9b514b" strokeWidth="1.8" strokeLinecap="round"/>
-      <path d="M25 25q4-14 16-14 13 0 17 13-9-2-14-8-8 8-19 9z" fill={avatar.hair}/>
-      <path d="M28 58q12 8 24 0l7 22H21z" fill={avatar.shirt}/>
-      <path d="M37 60l3 5 3-5" fill="none" stroke="#ffffff" strokeOpacity=".7" strokeWidth="2"/>
+    <svg className="avatar-illustration" width={size} height={size} viewBox="0 0 100 100" role="img" aria-label={avatar.label}>
+      <defs>
+        <linearGradient id={'avatar-sky-' + avatar.id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={avatar.bg}/><stop offset="1" stopColor="#ffffff"/></linearGradient>
+        <linearGradient id={'avatar-shirt-' + avatar.id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={avatar.shirt}/><stop offset="1" stopColor="#172f42"/></linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="50" fill={'url(#avatar-sky-' + avatar.id + ')'} />
+      <circle cx="78" cy="18" r="8" fill="#fff2b8" opacity=".9"/>
+      <path d="M0 67 Q24 48 47 66 T100 61 V100 H0Z" fill="#8ab58a" opacity=".65"/>
+      <path d="M0 78 Q25 62 49 78 T100 72 V100 H0Z" fill="#5e966e" opacity=".55"/>
+      {kind === 'farmer' && <g><path d="M8 58V36l12-9 12 9v23" fill="#b86f4b" opacity=".8"/><path d="M6 37l14-11 14 11" fill="none" stroke="#fff1d4" strokeWidth="3"/><path d="M9 43h22" stroke="#fff1d4" strokeWidth="2"/></g>}
+      {kind === 'horticulture' && <g><path d="M13 63q-10-16 2-23 13 9-2 23M15 63q1-22 17-25 4 17-17 25" fill="#4e9c67"/><path d="M15 63v-16" stroke="#377a51" strokeWidth="2"/></g>}
+      {kind === 'engineer' && <g><path d="M75 38l8-9 8 9-8 9z" fill="#fff" opacity=".7"/><path d="M83 47v9" stroke="#477b9d" strokeWidth="2"/></g>}
+      {kind === 'manager' && <g><path d="M75 56V32h13v24" fill="#d8c7a9" opacity=".8"/><path d="M72 33h19" stroke="#9c866b" strokeWidth="2"/></g>}
+      {kind === 'tractor' && <g><circle cx="18" cy="66" r="10" fill="#273a43"/><circle cx="18" cy="66" r="5" fill="#d5dce0"/><path d="M11 54h19l7 9H12z" fill="#d64c32"/></g>}
+      {kind === 'beekeeper' && <g><rect x="73" y="48" width="13" height="17" rx="4" fill="#d9a72e"/><rect x="75" y="45" width="9" height="5" rx="2" fill="#8d6425"/><path d="M79 55h2" stroke="#fff0b0" strokeWidth="2"/></g>}
+      {kind === 'vintner' && <g><path d="M12 55q-7-10 0-18 7 8 0 18M18 58q-3-13 8-17 4 11-8 17" fill="#5c944f"/><circle cx="13" cy="60" r="4" fill="#654c86"/><circle cx="21" cy="62" r="4" fill="#654c86"/></g>}
+      {kind === 'agritech' && <g><rect x="76" y="45" width="13" height="17" rx="2" fill="#304c66" stroke="#d7efff" strokeWidth="1.5"/><path d="M79 50h7M79 54h5" stroke="#8ed6e8" strokeWidth="1.5"/></g>}
+      {kind === 'student' && <g><path d="M72 49l12-5 12 5-12 5z" fill="#e8e1c8"/><path d="M84 54v8" stroke="#b9a982" strokeWidth="2"/><path d="M73 49v7" stroke="#b9a982" strokeWidth="2"/></g>}
+      <path d="M13 100q2-27 23-32h28q21 5 23 32z" fill={'url(#avatar-shirt-' + avatar.id + ')'} />
+      {kind === 'engineer' && <path d="M39 70h22l8 30H31z" fill="#e9c84f"/ >}
+      {kind === 'manager' && <path d="M35 72l15 9 15-9-5 28H40z" fill="#e7dfd1" opacity=".9"/>}
+      {kind === 'beekeeper' && <path d="M24 72q26 10 52 0l-5 28H29z" fill="#f2d67a" opacity=".85"/>}
+      <path d="M43 57h14v17H43z" fill={avatar.skin}/>
+      <ellipse cx="50" cy="43" rx="20" ry="24" fill={avatar.skin}/>
+      {kind === 'manager' && <path d="M29 44q-6-24 13-29 24-6 29 18l-7 20-5-25q-15 12-30 7z" fill={avatar.hair}/>}
+      {kind === 'horticulture' && <g><path d="M30 37q-4-23 19-25 23 2 21 26l-7-9q-14 8-28 3z" fill={avatar.hair}/><path d="M32 39q-9 12-4 28M67 39q9 12 4 28" stroke={avatar.hair} strokeWidth="5" fill="none" strokeLinecap="round"/><path d="M29 54q-8 18-2 24M70 54q8 18 2 24" stroke={avatar.hair} strokeWidth="3" fill="none" strokeLinecap="round"/></g>}
+      {kind === 'beekeeper' && <path d="M30 40q-4-24 19-27 23 2 21 27l-8-12q-13 8-25 3z" fill={avatar.hair}/>}
+      {kind === 'agritech' && <path d="M29 42q-5-25 20-29 24 4 22 28l-7-12q-14 10-29 5z" fill={avatar.hair}/>}
+      {kind === 'student' && <path d="M30 40q-4-23 20-26 22 2 21 25l-8-10q-15 7-29 2z" fill={avatar.hair}/>}
+      {kind === 'vintner' && <path d="M30 39q-4-24 20-25 23 2 21 25l-8-10q-14 8-29 2z" fill={avatar.hair}/>}
+      {kind === 'engineer' && <path d="M30 39q-3-24 20-26 24 2 21 27l-8-11q-14 9-29 4z" fill={avatar.hair}/>}
+      {kind === 'tractor' && <path d="M30 39q-4-24 20-25 23 1 21 25l-8-9q-14 7-29 2z" fill={avatar.hair}/>}
+      {kind === 'farmer' && <path d="M30 42q-3-23 20-25 23 2 21 26l-8-10q-15 8-29 3z" fill={avatar.hair}/>}
+      <path d="M30 42q-3 13 1 22M70 42q3 13-1 22" stroke={avatar.skin} strokeWidth="4" fill="none" strokeLinecap="round"/>
+      <circle cx="43" cy="44" r="1.8" fill="#2a2522"/><circle cx="57" cy="44" r="1.8" fill="#2a2522"/>
+      <path d="M46 54q4 3 8 0" stroke="#8b5146" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
+      {kind === 'farmer' && <g><path d="M37 58q13 10 26 0" stroke="#f0f0e8" strokeWidth="3" fill="none" strokeLinecap="round"/><path d="M23 30q4-12 27-13 23 1 27 13-25 5-54 0z" fill="#d6a64d" stroke="#9c7134" strokeWidth="2"/><path d="M29 29q21 5 42 0" stroke="#f5d98e" strokeWidth="2"/></g>}
+      {kind === 'tractor' && <g><path d="M24 31q4-15 26-16 23 1 27 16l-3 5H27z" fill="#26394a"/><path d="M27 34q23 4 48 0" stroke="#60788a" strokeWidth="3"/></g>}
+      {kind === 'engineer' && <g><rect x="31" y="39" width="16" height="11" rx="4" fill="none" stroke="#263c4e" strokeWidth="2"/><rect x="53" y="39" width="16" height="11" rx="4" fill="none" stroke="#263c4e" strokeWidth="2"/><path d="M47 43h6" stroke="#263c4e" strokeWidth="2"/></g>}
+      {kind === 'agritech' && <g><rect x="31" y="39" width="16" height="11" rx="4" fill="none" stroke="#263c4e" strokeWidth="2"/><rect x="53" y="39" width="16" height="11" rx="4" fill="none" stroke="#263c4e" strokeWidth="2"/><path d="M47 43h6" stroke="#263c4e" strokeWidth="2"/></g>}
+      {kind === 'vintner' && <g><path d="M34 57q16 12 32 0" stroke="#f4eee5" strokeWidth="4" fill="none" strokeLinecap="round"/><path d="M31 35q3-15 19-17 18 2 20 18" stroke="#e8e5df" strokeWidth="5" fill="none" strokeLinecap="round"/></g>}
+      {kind === 'beekeeper' && <g><path d="M25 24q25-14 50 0l-5 41q-20 17-40 0z" fill="none" stroke="#f8e6ad" strokeWidth="3" opacity=".8"/><path d="M29 29q21 6 42 0" stroke="#f8e6ad" strokeWidth="2" fill="none"/></g>}
+      {kind === 'student' && <path d="M38 70l12 8 12-8" stroke="#d9e7d7" strokeWidth="2" fill="none"/>}
     </svg>
   );
 }
@@ -422,8 +466,8 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                 <div className="profile-avatar-picker-heading"><strong>Alege-ți avatarul</strong><span>Personajul va apărea lângă numele tău în platformă.</span></div>
                 <div className="profile-avatar-grid">
                   {avatarOptions.map(option => (
-                    <button key={option.id} type="button" className={`profile-avatar-option ${avatarId === option.id ? 'selected' : ''}`} onClick={() => void saveAvatar(option.id)} disabled={avatarSaving} aria-pressed={avatarId === option.id} aria-label={`Alege avatarul ${option.id}`}>
-                      <AvatarIllustration avatarId={option.id} size={64}/>
+                    <button key={option.id} type="button" className={`profile-avatar-option ${avatarId === option.id ? 'selected' : ''}`} onClick={() => void saveAvatar(option.id)} disabled={avatarSaving} aria-pressed={avatarId === option.id} aria-label={`Alege avatarul: ${option.label}`}>
+                      <AvatarIllustration avatarId={option.id} size={64}/><span className="profile-avatar-label">{option.label}</span>
                       {avatarId === option.id && <span className="avatar-selected-check">✓</span>}
                     </button>
                   ))}
