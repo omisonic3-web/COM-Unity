@@ -150,7 +150,7 @@ function App() {
       </>}
 
       {user ? (
-        <Dashboard user={user} onLogout={handleLogout} loading={loading} />
+        <Dashboard user={user} onLogout={handleLogout} loading={loading} onProfileUpdated={displayName => setUser(current => current ? { ...current, displayName } : current)} />
       ) : <>
       <section className="hero" id="despre">
         <div className="hero-content">
