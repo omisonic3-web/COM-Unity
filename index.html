@@ -271,6 +271,36 @@ dialog form{box-shadow:none;border:0}
     </div>
   </form>
 </dialog>
+  
+<dialog id="userLoginDialog" aria-labelledby="userLoginTitle">
+  <form id="userLoginForm">
+    <h3 id="userLoginTitle" style="margin:0;font-size:26px">
+      Autentificare COM-Unity
+    </h3>
+
+    <label>
+      Email
+      <input id="userLoginEmail" type="email"
+        required autocomplete="username">
+    </label>
+
+    <label>
+      Parolă
+      <input id="userLoginPassword" type="password"
+        required autocomplete="current-password">
+    </label>
+
+    <div class="err" id="userLoginError" role="alert"></div>
+
+    <div class="row">
+      <button class="btn" type="submit">Intră în cont</button>
+      <button class="btn sm" type="button" id="userLoginCancel">
+        Anulează
+      </button>
+    </div>
+  </form>
+</dialog>
+
 
 <footer><div class="wrap"><a class="logo" href="#top">COM<i style="color:var(--gold);font-style:normal">-</i>Unity</a><br>Un spațiu de ajutor reciproc. Postările de mai sus sunt exemple de demonstrație; postările noi nu se salvează după închiderea paginii.</div></footer>
 
