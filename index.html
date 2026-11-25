@@ -435,6 +435,50 @@ document.getElementById('registerForm').addEventListener('submit',async function
 
 render();
 renderStories();
+  
+document.getElementById('userLoginBtn').addEventListener('click',function(){
+  document.getElementById('userLoginDialog').showModal();
+});
+
+document.getElementById('userLoginCancel').addEventListener('click',function(){
+  document.getElementById('userLoginDialog').close();
+});
+
+document.getElementById('userLoginForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+
+  const error=document.getElementById('userLoginError');
+  error.textContent='';
+
+  const data={
+    email:document.getElementById('userLoginEmail').value.trim(),
+    password:document.getElementById('userLoginPassword').value
+  };
+
+  try{
+    const response=await fetch('/api/auth/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+
+    const result=await response.json();
+
+    if(!response.ok){
+      error.textContent=result.error||'Autentificarea nu a reușit.';
+      return;
+    }
+
+    this.reset();
+    document.getElementById('userLoginDialog').close();
+    alert('Autentificare reușită! Bun venit în COM-Unity.');
+    location.reload();
+
+  }catch(err){
+    error.textContent='Nu s-a putut contacta serverul.';
+  }
+});
+
 </script>
 </body>
 </html>
