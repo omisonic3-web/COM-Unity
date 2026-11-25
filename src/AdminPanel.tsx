@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, Plus, MapPin, Tags, Power, Trash2 } from 'lucide-react';
+import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, Plus, MapPin, Tags, Power } from 'lucide-react';
 
 type Member = { id: string; display_name: string; email: string; role: string; verified: number };
 type Stats = { users: number; requests: number; offers: number; projects: number };
