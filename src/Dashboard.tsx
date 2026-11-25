@@ -64,6 +64,29 @@ const interfaceThemes: { id: InterfaceTheme; label: string; description: string 
   { id: 'light', label: 'Light', description: 'Interfață luminoasă' }
 ];
 
+
+const avatarOptions = [{"id":"person-1","bg":"#dbeafe","skin":"#c9825b","hair":"#3c2b27","shirt":"#3978b9"},{"id":"person-2","bg":"#fce7f3","skin":"#f0bd91","hair":"#70412e","shirt":"#bd5684"},{"id":"person-3","bg":"#dcfce7","skin":"#8f563d","hair":"#201d1b","shirt":"#23876d"},{"id":"person-4","bg":"#ede9fe","skin":"#e6ad83","hair":"#342b50","shirt":"#7257b8"},{"id":"person-5","bg":"#fef3c7","skin":"#f3c9a5","hair":"#b66a36","shirt":"#d28a32"},{"id":"person-6","bg":"#cffafe","skin":"#a9684e","hair":"#171c2b","shirt":"#328b9b"},{"id":"person-7","bg":"#ffe4e6","skin":"#e4b18c","hair":"#5a3328","shirt":"#c45e69"},{"id":"person-8","bg":"#e0e7ff","skin":"#9b6248","hair":"#26242a","shirt":"#5268a8"}];
+function AvatarIllustration({ avatarId, size = 56 }: { avatarId: string; size?: number }) {
+  const avatar = avatarOptions.find(item => item.id === avatarId) || avatarOptions[0];
+  const gradientId = 'avatar-bg-' + avatar.id;
+  return (
+    <svg className="avatar-illustration" width={size} height={size} viewBox="0 0 80 80" role="img" aria-label="Avatar ilustrat">
+      <defs><linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor={avatar.bg}/><stop offset="100%" stopColor="#ffffff"/></linearGradient></defs>
+      <circle cx="40" cy="40" r="40" fill={'url(#' + gradientId + ')'} />
+      <path d="M8 80c2-17 14-26 32-26s30 9 32 26" fill={avatar.shirt}/>
+      <path d="M32 49h16v13H32z" fill={avatar.skin}/>
+      <ellipse cx="40" cy="34" rx="18" ry="21" fill={avatar.skin}/>
+      <path d="M22 33c-2-17 7-26 20-26 13 0 20 10 17 27-3-7-7-10-12-12-8 7-16 8-25 7z" fill={avatar.hair}/>
+      <path d="M23 31c-4 3-4 9 0 12M57 31c4 3 4 9 0 12" fill="none" stroke={avatar.skin} strokeWidth="5" strokeLinecap="round"/>
+      <circle cx="33" cy="36" r="1.6" fill="#29252a"/><circle cx="47" cy="36" r="1.6" fill="#29252a"/>
+      <path d="M35 45q5 4 10 0" fill="none" stroke="#9b514b" strokeWidth="1.8" strokeLinecap="round"/>
+      <path d="M25 25q4-14 16-14 13 0 17 13-9-2-14-8-8 8-19 9z" fill={avatar.hair}/>
+      <path d="M28 58q12 8 24 0l7 22H21z" fill={avatar.shirt}/>
+      <path d="M37 60l3 5 3-5" fill="none" stroke="#ffffff" strokeOpacity=".7" strokeWidth="2"/>
+    </svg>
+  );
+}
+
 type ActivityNotification = {
   id: string; title: string; message: string; actor_name: string;
   entity_type: string | null; entity_id: string | null; read_at: string | null; created_at: string;
@@ -77,6 +100,8 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
   });
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileName, setProfileName] = useState(user.displayName);
+  const [avatarId, setAvatarId] = useState('person-1');
+  const [avatarSaving, setAvatarSaving] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
@@ -205,6 +230,26 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
 
   useEffect(() => { localStorage.setItem('com-unity-theme', theme); }, [theme]);
 
+  useEffect(() => {
+    let active = true;
+    fetch('/api/profile', { credentials: 'same-origin', cache: 'no-store' })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (active && data?.user?.avatarId) setAvatarId(data.user.avatarId); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  async function saveAvatar(nextAvatarId: string) {
+    setAvatarId(nextAvatarId); setAvatarSaving(true); setProfileError(''); setProfileSuccess('');
+    try {
+      const response = await fetch('/api/profile', { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ avatarId: nextAvatarId }) });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Avatarul nu a putut fi salvat.');
+      setProfileSuccess('Avatarul a fost actualizat.');
+    } catch (error) { setProfileError(error instanceof Error ? error.message : 'A apărut o eroare.'); }
+    finally { setAvatarSaving(false); }
+  }
+
   const activeCopy = sectionCopy[activeSection];
 
   return (
@@ -282,7 +327,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
               </button>
 
             </div>
-            <div className="account-avatar">{user.displayName.trim().charAt(0).toUpperCase() || 'U'}</div>
+            <div className="account-avatar"><AvatarIllustration avatarId={avatarId} size={38} /></div>
             <div className="account-meta">
               <strong>{user.displayName}</strong>
               <span>{user.role === 'admin' ? 'Administrator' : user.role === 'moderator' ? 'Moderator' : 'Membru'}</span>
@@ -335,7 +380,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                 <section className="dashboard-panel profile-panel">
                   <div className="panel-heading"><div><h2>Contul meu</h2><p>Datele contului autentificat.</p></div><UserRound size={19} /></div>
                   <div className="profile-summary">
-                    <div className="profile-avatar">{user.displayName.trim().charAt(0).toUpperCase() || 'U'}</div>
+                    <div className="profile-avatar"><AvatarIllustration avatarId={avatarId} size={52} /></div>
                     <div><strong>{user.displayName}</strong><span>{user.email}</span></div>
                   </div>
               <div className="profile-status"><span className="status-dot" /> Cont activ și email confirmat</div>
@@ -370,8 +415,22 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
 
           {activeSection === 'profile' && (
             <section className="dashboard-panel profile-details">
-              <div className="profile-detail-avatar">{user.displayName.trim().charAt(0).toUpperCase() || 'U'}</div>
+              <div className="profile-detail-avatar"><AvatarIllustration avatarId={avatarId} size={88} /></div>
               {profileSuccess && <div className="requests-alert success" role="status">{profileSuccess}</div>}
+
+              <div className="profile-avatar-picker">
+                <div className="profile-avatar-picker-heading"><strong>Alege-ți avatarul</strong><span>Personajul va apărea lângă numele tău în platformă.</span></div>
+                <div className="profile-avatar-grid">
+                  {avatarOptions.map(option => (
+                    <button key={option.id} type="button" className={`profile-avatar-option ${avatarId === option.id ? 'selected' : ''}`} onClick={() => void saveAvatar(option.id)} disabled={avatarSaving} aria-pressed={avatarId === option.id} aria-label={`Alege avatarul ${option.id}`}>
+                      <AvatarIllustration avatarId={option.id} size={64}/>
+                      {avatarId === option.id && <span className="avatar-selected-check">✓</span>}
+                    </button>
+                  ))}
+                </div>
+                {avatarSaving && <small className="profile-avatar-saving">Se salvează avatarul...</small>}
+              </div>
+
               {profileError && <div className="requests-alert error" role="alert">{profileError}</div>}
               {editingProfile ? (
                 <form onSubmit={saveProfile} className="request-form" style={{ width: '100%', maxWidth: 520 }}>
