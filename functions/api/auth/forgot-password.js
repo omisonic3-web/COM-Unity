@@ -16,7 +16,7 @@ async function rateLimit(env, request, email, now) {
   return { attempts: Number(row?.attempts || 0), retry: Math.max(1, WINDOW - (now - Number(row?.window_started_at || now))) };
 }
 async function sendEmail(email, token, apiKey, origin) {
-  const url = origin + "/?reset-token=" + encodeURIComponent(token);
+  const url = origin + "/reset-password.html?token=" + encodeURIComponent(token);
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { "Authorization": "Bearer " + apiKey, "Content-Type": "application/json" },
