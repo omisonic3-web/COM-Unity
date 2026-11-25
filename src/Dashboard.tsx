@@ -146,7 +146,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
   const [profileName, setProfileName] = useState(user.displayName);
   const [avatarId, setAvatarId] = useState('person-1');
   const [avatarSaving, setAvatarSaving] = useState(false);
-  const [reputation, setReputation] = useState({ average: 0, count: 0 });
+  const [reputation, setReputation] = useState({ average: 0, count: 0, completedProjects: 0 });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
@@ -279,7 +279,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
     let active = true;
     fetch('/api/profile', { credentials: 'same-origin', cache: 'no-store' })
       .then(response => response.ok ? response.json() : null)
-      .then(data => { if (active && data?.user) { if (data.user.avatarId) setAvatarId(data.user.avatarId); setReputation({ average: Number(data.user.ratingAverage || 0), count: Number(data.user.ratingCount || 0) }); } })
+      .then(data => { if (active && data?.user) { if (data.user.avatarId) setAvatarId(data.user.avatarId); setReputation({ average: Number(data.user.ratingAverage || 0), count: Number(data.user.ratingCount || 0), completedProjects: Number(data.user.completedProjects || 0) }); } })
       .catch(() => {});
     return () => { active = false; };
   }, []);
@@ -295,6 +295,13 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
     finally { setAvatarSaving(false); }
   }
 
+  const badges = [
+    { id: 'new', icon: '🌱', name: 'Membru nou', description: 'Bun venit în comunitatea COM-Unity!', unlocked: reputation.completedProjects === 0 && reputation.count === 0 },
+    { id: 'helper', icon: '🤝', name: 'Colaborator activ', description: 'Ai participat la cel puțin un proiect finalizat.', unlocked: reputation.completedProjects >= 1 },
+    { id: 'liked', icon: '⭐', name: 'Membru apreciat', description: 'Ai primit cel puțin o evaluare de minimum 4 stele în medie.', unlocked: reputation.count >= 1 && reputation.average >= 4 },
+    { id: 'trusted', icon: '🏆', name: 'Comunitar de încredere', description: 'Ai cel puțin 3 evaluări și o medie de minimum 4,5 stele.', unlocked: reputation.count >= 3 && reputation.average >= 4.5 },
+    { id: 'ambassador', icon: '💎', name: 'Ambasador COM-Unity', description: 'Ai contribuit la 5 proiecte și ai cel puțin 5 evaluări cu media de minimum 4,8.', unlocked: reputation.completedProjects >= 5 && reputation.count >= 5 && reputation.average >= 4.8 }
+  ];
   const activeCopy = sectionCopy[activeSection];
 
   return (
@@ -498,6 +505,17 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                 <div><strong>Reputația mea</strong><span>Evaluări primite în proiectele finalizate</span></div>
                 <div className="profile-reputation-score"><strong>{reputation.count ? reputation.average.toFixed(1) : '—'}</strong><span className="project-rating-value">★★★★★</span><small>{reputation.count} {reputation.count === 1 ? 'evaluare' : 'evaluări'}</small></div>
               </div>
+              <section className="profile-badges" aria-labelledby="profile-badges-title">
+                <div className="profile-badges-heading"><div><strong id="profile-badges-title">Insignele mele</strong><span>Insigne acordate automat pentru implicarea în comunitate</span></div><small>{badges.filter(badge => badge.unlocked).length} / {badges.length} obținute</small></div>
+                <div className="profile-badges-grid">
+                  {badges.map(badge => <article key={badge.id} className={`profile-badge-card ${badge.unlocked ? 'unlocked' : 'locked'}`} title={badge.description}>
+                    <span className="profile-badge-icon" aria-hidden="true">{badge.icon}</span>
+                    <strong>{badge.name}</strong>
+                    <small>{badge.description}</small>
+                    <span className="profile-badge-status">{badge.unlocked ? 'Obținută' : 'În curs'}</span>
+                  </article>)}
+                </div>
+              </section>
               <div className="profile-theme-settings">
                 <div className="profile-theme-heading"><span className="profile-theme-icon"><Palette size={18}/></span><div><strong>Temă interfață</strong><p>Alege aspectul platformei. Preferința se păstrează pe acest dispozitiv.</p></div></div>
                 <div className="profile-theme-grid">
