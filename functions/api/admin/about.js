@@ -64,7 +64,7 @@ export async function onRequestPatch({ request, env }) {
   if (fields.contact_location.length > 160) return json({ error: "Locația poate avea maximum 160 de caractere." }, 400);
   try {
     await ensureAbout(env);
-    await env.DB.prepare(`UPDATE about_content SET title=?,intro=?,mission=?,vision=?,values=?,contact_email=?,contact_location=?,updated_at=CURRENT_TIMESTAMP WHERE id=1`)
+    await env.DB.prepare(`UPDATE about_content SET title=?,intro=?,mission=?,vision=?,values_text=?,contact_email=?,contact_location=?,updated_at=CURRENT_TIMESTAMP WHERE id=1`)
       .bind(fields.title,fields.intro,fields.mission,fields.vision,fields.values_text,fields.contact_email,fields.contact_location).run();
     return json({ ok: true });
   } catch (error) {
