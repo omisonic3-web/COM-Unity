@@ -1172,3 +1172,174 @@ footer .brand {
 .dashboard-layout[data-theme="light"] .dashboard-footer{color:#68748b}
 .theme-selected-mark{margin-left:auto;padding:4px 6px;border-radius:6px;background:var(--theme-accent-soft,#48c9e81a);color:var(--theme-accent,#70dff2);font-size:8px;font-weight:800}
 @media(max-width:700px){.dashboard-topbar{gap:9px;padding:0 14px}.dashboard-breadcrumb{min-width:0;overflow:hidden;white-space:nowrap}.dashboard-breadcrumb strong{overflow:hidden;text-overflow:ellipsis}.dashboard-account{gap:6px}.account-meta{display:none}}
+
+
+/* Contrast and readable text across every dashboard theme */
+.dashboard-layout {
+  --theme-text: #f3f7ff;
+  --theme-muted: #bdc9dc;
+  --theme-surface: #111c2d;
+  --theme-card: #172438;
+}
+.dashboard-layout:not([data-theme="light"]) .dashboard-sidebar,
+.dashboard-layout:not([data-theme="light"]) .dashboard-topbar {
+  color: var(--theme-text);
+}
+.dashboard-layout:not([data-theme="light"]) .dashboard-nav-item,
+.dashboard-layout:not([data-theme="light"]) .dashboard-breadcrumb,
+.dashboard-layout:not([data-theme="light"]) .dashboard-section-heading p,
+.dashboard-layout:not([data-theme="light"]) .panel-heading p,
+.dashboard-layout:not([data-theme="light"]) .action-card-copy small,
+.dashboard-layout:not([data-theme="light"]) .dashboard-empty p,
+.dashboard-layout:not([data-theme="light"]) .profile-summary span,
+.dashboard-layout:not([data-theme="light"]) .profile-detail-row span,
+.dashboard-layout:not([data-theme="light"]) .account-meta span,
+.dashboard-layout:not([data-theme="light"]) .admin-panel-heading p,
+.dashboard-layout:not([data-theme="light"]) .admin-stat-card small,
+.dashboard-layout:not([data-theme="light"]) .admin-table th,
+.dashboard-layout:not([data-theme="light"]) .admin-muted,
+.dashboard-layout:not([data-theme="light"]) .admin-coming-grid p,
+.dashboard-layout:not([data-theme="light"]) .admin-catalog-item small,
+.dashboard-layout:not([data-theme="light"]) .useful-link-card p,
+.dashboard-layout:not([data-theme="light"]) .useful-links-heading p,
+.dashboard-layout:not([data-theme="light"]) .about-info-card p,
+.dashboard-layout:not([data-theme="light"]) .about-values-card p,
+.dashboard-layout:not([data-theme="light"]) .about-signoff,
+.dashboard-layout:not([data-theme="light"]) .admin-about-form label {
+  color: #bdc9dc;
+}
+.dashboard-layout:not([data-theme="light"]) .dashboard-nav-item.active {
+  color: var(--theme-accent, #72def2);
+}
+.dashboard-layout:not([data-theme="light"]) .dashboard-section-heading h2,
+.dashboard-layout:not([data-theme="light"]) .panel-heading h2,
+.dashboard-layout:not([data-theme="light"]) .admin-panel-heading h2,
+.dashboard-layout:not([data-theme="light"]) .useful-links-heading h2,
+.dashboard-layout:not([data-theme="light"]) .about-hero h2,
+.dashboard-layout:not([data-theme="light"]) .about-info-card h3,
+.dashboard-layout:not([data-theme="light"]) .about-values-card h3,
+.dashboard-layout:not([data-theme="light"]) .about-contact-card h3 {
+  color: #f3f7ff;
+}
+.dashboard-layout:not([data-theme="light"]) .admin-catalog-form input,
+.dashboard-layout:not([data-theme="light"]) .admin-catalog-form select,
+.dashboard-layout:not([data-theme="light"]) .admin-links-form input,
+.dashboard-layout:not([data-theme="light"]) .admin-about-form input,
+.dashboard-layout:not([data-theme="light"]) .admin-about-form textarea {
+  color: #f3f7ff;
+  background: #101b2c;
+}
+.dashboard-layout:not([data-theme="light"]) input::placeholder,
+.dashboard-layout:not([data-theme="light"]) textarea::placeholder {
+  color: #aab8cc;
+}
+
+/* Light theme: replace dark fixed text and controls with accessible dark colors */
+.dashboard-layout[data-theme="light"] {
+  --theme-text: #202b43;
+  --theme-muted: #52617a;
+  --theme-card: #ffffff;
+  color: #202b43;
+}
+.dashboard-layout[data-theme="light"] .dashboard-sidebar,
+.dashboard-layout[data-theme="light"] .dashboard-topbar,
+.dashboard-layout[data-theme="light"] .dashboard-panel,
+.dashboard-layout[data-theme="light"] .dashboard-action-card,
+.dashboard-layout[data-theme="light"] .admin-stat-card,
+.dashboard-layout[data-theme="light"] .admin-coming-grid article,
+.dashboard-layout[data-theme="light"] .admin-catalog,
+.dashboard-layout[data-theme="light"] .useful-link-card,
+.dashboard-layout[data-theme="light"] .about-info-card,
+.dashboard-layout[data-theme="light"] .about-values-card,
+.dashboard-layout[data-theme="light"] .about-contact-card,
+.dashboard-layout[data-theme="light"] .profile-theme-option {
+  background: #ffffff;
+  border-color: #d7dfed;
+  color: #202b43;
+}
+.dashboard-layout[data-theme="light"] .dashboard-brand,
+.dashboard-layout[data-theme="light"] .dashboard-breadcrumb strong,
+.dashboard-layout[data-theme="light"] .dashboard-welcome h1,
+.dashboard-layout[data-theme="light"] .dashboard-section-heading h2,
+.dashboard-layout[data-theme="light"] .panel-heading h2,
+.dashboard-layout[data-theme="light"] .module-placeholder h2,
+.dashboard-layout[data-theme="light"] .admin-panel-heading h2,
+.dashboard-layout[data-theme="light"] .admin-coming-grid h3,
+.dashboard-layout[data-theme="light"] .admin-catalog .panel-heading h2,
+.dashboard-layout[data-theme="light"] .admin-catalog-item strong,
+.dashboard-layout[data-theme="light"] .useful-links-heading h2,
+.dashboard-layout[data-theme="light"] .useful-link-card h3,
+.dashboard-layout[data-theme="light"] .about-hero h2,
+.dashboard-layout[data-theme="light"] .about-info-card h3,
+.dashboard-layout[data-theme="light"] .about-values-card h3,
+.dashboard-layout[data-theme="light"] .about-contact-card h3,
+.dashboard-layout[data-theme="light"] .dashboard-empty strong,
+.dashboard-layout[data-theme="light"] .profile-summary strong,
+.dashboard-layout[data-theme="light"] .account-meta strong,
+.dashboard-layout[data-theme="light"] .admin-stat-card strong {
+  color: #202b43;
+}
+.dashboard-layout[data-theme="light"] .dashboard-nav-item,
+.dashboard-layout[data-theme="light"] .dashboard-breadcrumb,
+.dashboard-layout[data-theme="light"] .dashboard-section-heading p,
+.dashboard-layout[data-theme="light"] .panel-heading p,
+.dashboard-layout[data-theme="light"] .dashboard-welcome p,
+.dashboard-layout[data-theme="light"] .action-card-copy small,
+.dashboard-layout[data-theme="light"] .dashboard-empty p,
+.dashboard-layout[data-theme="light"] .profile-summary span,
+.dashboard-layout[data-theme="light"] .profile-detail-row span,
+.dashboard-layout[data-theme="light"] .account-meta span,
+.dashboard-layout[data-theme="light"] .admin-panel-heading p,
+.dashboard-layout[data-theme="light"] .admin-stat-card small,
+.dashboard-layout[data-theme="light"] .admin-table th,
+.dashboard-layout[data-theme="light"] .admin-table td,
+.dashboard-layout[data-theme="light"] .admin-muted,
+.dashboard-layout[data-theme="light"] .admin-coming-grid p,
+.dashboard-layout[data-theme="light"] .admin-catalog-item small,
+.dashboard-layout[data-theme="light"] .useful-links-heading p,
+.dashboard-layout[data-theme="light"] .useful-link-card p,
+.dashboard-layout[data-theme="light"] .about-hero>p,
+.dashboard-layout[data-theme="light"] .about-info-card p,
+.dashboard-layout[data-theme="light"] .about-values-card p,
+.dashboard-layout[data-theme="light"] .about-signoff,
+.dashboard-layout[data-theme="light"] .admin-about-form label {
+  color: #52617a;
+}
+.dashboard-layout[data-theme="light"] .dashboard-nav-item.active {
+  color: #344fb5;
+  background: #647ee81a;
+}
+.dashboard-layout[data-theme="light"] .dashboard-welcome {
+  background: linear-gradient(145deg, #ffffff, #f1f4fb);
+  border-color: #d7dfed;
+}
+.dashboard-layout[data-theme="light"] .admin-catalog-form input,
+.dashboard-layout[data-theme="light"] .admin-catalog-form select,
+.dashboard-layout[data-theme="light"] .admin-links-form input,
+.dashboard-layout[data-theme="light"] .admin-about-form input,
+.dashboard-layout[data-theme="light"] .admin-about-form textarea {
+  color: #202b43;
+  background: #ffffff;
+  border-color: #c7d1e2;
+}
+.dashboard-layout[data-theme="light"] input::placeholder,
+.dashboard-layout[data-theme="light"] textarea::placeholder {
+  color: #68758b;
+  opacity: 1;
+}
+.dashboard-layout[data-theme="light"] .admin-role,
+.dashboard-layout[data-theme="light"] .admin-catalog-toggle,
+.dashboard-layout[data-theme="light"] .button-outline {
+  color: #40506b;
+  background: #f1f4fa;
+  border-color: #cbd5e5;
+}
+.dashboard-layout[data-theme="light"] .about-contact-card a,
+.dashboard-layout[data-theme="light"] .about-contact-card p {
+  color: #4059a8;
+}
+.dashboard-layout[data-theme="light"] .dashboard-home-button,
+.dashboard-layout[data-theme="light"] .text-link,
+.dashboard-layout[data-theme="light"] .useful-link-card a {
+  color: #344fb5;
+}
