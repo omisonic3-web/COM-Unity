@@ -1343,3 +1343,39 @@ footer .brand {
 .dashboard-layout[data-theme="light"] .useful-link-card a {
   color: #344fb5;
 }
+
+
+/* Sidebar text contrast: keep navigation labels readable in every dark theme */
+.dashboard-layout:not([data-theme="light"]) .dashboard-sidebar .sidebar-label {
+  color: #aebdd1;
+}
+.dashboard-layout:not([data-theme="light"]) .dashboard-sidebar .dashboard-nav-item {
+  color: #e0e9f6;
+}
+.dashboard-layout:not([data-theme="light"]) .dashboard-sidebar .dashboard-nav-item:hover {
+  color: #ffffff;
+  background: #ffffff12;
+}
+.dashboard-layout:not([data-theme="light"]) .dashboard-sidebar .dashboard-nav-item.active {
+  color: #ffffff;
+  background: color-mix(in srgb, var(--theme-accent, #48c9e8) 22%, #101b2c);
+  border-color: var(--theme-accent, #48c9e8);
+}
+.dashboard-layout[data-theme="light"] .dashboard-sidebar .sidebar-label {
+  color: #52617a;
+}
+.dashboard-layout[data-theme="light"] .dashboard-sidebar .dashboard-nav-item {
+  color: #34415a;
+}
+.dashboard-layout[data-theme="light"] .dashboard-sidebar .dashboard-nav-item:hover {
+  color: #202b43;
+  background: #e8edf7;
+}
+.dashboard-layout[data-theme="light"] .dashboard-sidebar .dashboard-nav-item.active {
+  color: #263f9f;
+  background: #e4eaff;
+  border-color: #aebdf0;
+}
+.dashboard-sidebar .dashboard-nav-item span:not(.nav-active-mark):not(.message-unread-badge) {
+  opacity: 1;
+}
