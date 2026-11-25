@@ -131,23 +131,12 @@ function App() {
         </nav>
 
         <div className="nav-actions">
-          {user ? (
-            <>
-              <span className="user-chip"><UserRound size={16} /> {user.displayName}</span>
-              <button className="button button-outline" onClick={handleLogout} disabled={loading}>
-                <LogOut size={16} /> Ieșire
-              </button>
-            </>
-          ) : (
-            <>
-              <button className="button button-outline" onClick={() => openAuth('login')} disabled={checkingSession}>
-                Autentificare
-              </button>
-              <button className="button button-primary" onClick={() => openAuth('register')}>
-                Înregistrare <ArrowRight size={17} />
-              </button>
-            </>
-          )}
+          <button className="button button-outline" onClick={() => openAuth('login')} disabled={checkingSession}>
+            Autentificare
+          </button>
+          <button className="button button-primary" onClick={() => openAuth('register')}>
+            Înregistrare <ArrowRight size={17} />
+          </button>
         </div>
       </header>
 
