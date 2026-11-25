@@ -49,7 +49,7 @@ export async function onRequestPost({ request, env }) {
 
   const password = typeof body?.password === "string" ? body.password : "";
   const confirmation = typeof body?.confirmation === "string" ? body.confirmation : "";
-  if (password.length < 1 || password.length > 128 || confirmation !== "ȘTERGE CONTUL") {
+  if (password.length < 1 || password.length > 128 || confirmation !== "STERGE CONTUL") {
     return Response.json({ error: "Confirmarea sau parola nu este validă." }, { status: 400, headers });
   }
 
