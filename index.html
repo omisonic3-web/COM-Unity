@@ -346,7 +346,68 @@ document.getElementById('logout').addEventListener('click',function(){admin=fals
 board.addEventListener('click',function(e){var b=e.target.closest('button[data-del]');if(!b||!admin)return;items.splice(+b.dataset.del,1);render()});
 document.getElementById('stList').addEventListener('click',function(e){var b=e.target.closest('button[data-sd]');if(!b||!admin)return;stories.splice(+b.dataset.sd,1);renderStories()});
 document.getElementById('sf').addEventListener('submit',function(e){e.preventDefault();if(!admin)return;stories.unshift({t:document.getElementById('stTitle').value.trim(),x:document.getElementById('stText').value.trim(),a:document.getElementById('stAuthor').value.trim()});this.reset();renderStories()});
-render();renderStories();
+
+document.getElementById('userRegisterBtn').addEventListener('click',function(){
+  document.getElementById('registerDialog').showModal();
+});
+
+document.getElementById('registerCancel').addEventListener('click',function(){
+  document.getElementById('registerDialog').close();
+});
+
+document.getElementById('registerForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+
+  const error=document.getElementById('registerError');
+  const password=document.getElementById('regPassword').value;
+  const confirm=document.getElementById('regConfirm').value;
+
+  error.textContent='';
+
+  if(password!==confirm){
+    error.textContent='Parolele nu coincid.';
+    return;
+  }
+
+  if(password.length<12){
+    error.textContent='Parola trebuie să aibă minimum 12 caractere.';
+    return;
+  }
+
+  const data={
+    displayName:document.getElementById('regName').value.trim(),
+    email:document.getElementById('regEmail').value.trim(),
+    password:password,
+    website:this.querySelector('[name="website"]').value
+  };
+
+  try{
+    const response=await fetch('/api/auth/register',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+
+    const result=await response.json();
+
+    if(!response.ok){
+      error.textContent=result.error||result.message||'Înregistrarea nu a reușit.';
+      return;
+    }
+
+    this.reset();
+    document.getElementById('registerDialog').close();
+    alert('Contul a fost creat! Verifică adresa de email pentru confirmare.');
+  }catch(err){
+    error.textContent='Nu s-a putut contacta serverul. Încearcă din nou.';
+  }
+});
+
+render();
+renderStories();
 </script>
+</body>
+</html>
+
 </body>
 </html>
