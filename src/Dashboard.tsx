@@ -481,7 +481,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                 <div>
                   <span className="account-deletion-kicker">ZONĂ DE SIGURANȚĂ</span>
                   <h3 id="account-deletion-title">Ștergerea contului</h3>
-                  <p>Poți solicita anonimizarea datelor personale. Mesajele private trimise și primite vor fi șterse definitiv. Contribuțiile comunitare pot rămâne vizibile sub numele „Membru anonim”.</p>
+                  <p>Poți solicita eliminarea datelor de identificare și pseudonimizarea contului. Mesajele private trimise și primite vor fi șterse definitiv. Contribuțiile comunitare pot rămâne vizibile sub numele „Membru anonim”, păstrând un identificator tehnic intern.</p>
                 </div>
                 {user.role === 'admin' ? (
                   <p className="account-deletion-admin-note">Conturile de administrator sunt protejate. Transferă mai întâi rolul de administrator către alt cont, apoi poți solicita ștergerea.</p>
@@ -497,9 +497,9 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                     </label>
                     <ul>
                       <li>Mesajele private vor fi șterse definitiv.</li>
-                      <li>Profilul, emailul și datele de autentificare vor fi anonimizate.</li>
+                      <li>Profilul și avatarul vor fi eliminate, iar datele de autentificare vor fi dezactivate și înlocuite.</li>
                       <li>Cererile, ofertele, proiectele și evaluările comunitare vor fi păstrate sub identitatea „Membru anonim”.</li>
-                      <li>Unele texte publicate pot conține informații care te identifică și vor rămâne neschimbate.</li>
+                      <li>Unele texte publicate pot conține informații care te identifică și vor rămâne neschimbate, dacă nu soliciți separat evaluarea eliminării lor.</li>
                     </ul>
                     {deletionError && <div className="requests-alert error" role="alert">{deletionError}</div>}
                     <div className="request-form-footer">
