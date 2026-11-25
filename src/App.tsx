@@ -79,7 +79,8 @@ function App() {
           throw new Error('Adresa de email nu a fost confirmată. Deschide linkul primit prin email înainte de autentificare.');
         }
         const diagnostic = typeof data.diagnostic === 'string' ? ` (Etapă: ${data.diagnostic})` : '';
-        throw new Error((data.error || 'Solicitarea nu a putut fi procesată.') + diagnostic);
+        const diagnosticReason = typeof data.diagnosticReason === 'string' ? ` — ${data.diagnosticReason}` : '';
+        throw new Error((data.error || 'Solicitarea nu a putut fi procesată.') + diagnostic + diagnosticReason);
       }
 
       if (authMode === 'register') {
