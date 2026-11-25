@@ -97,8 +97,9 @@ function HelpRequests({ userId }: { userId: string }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Răspunsul nu a putut fi trimis.");
       setResponseDraft("");
-      await toggleResponses(item);
-      setExpandedRequest(item.id);
+      const refreshed = await fetch(`/api/requests/${encodeURIComponent(item.id)}/responses`, { credentials: "same-origin", cache: "no-store" });
+      const refreshedData = await refreshed.json();
+      if (refreshed.ok) setResponses(current => ({ ...current, [item.id]: refreshedData.responses || [] }));
       setSuccess("Răspunsul a fost trimis. Autorul cererii va primi o notificare.");
     } catch (e) { setError(e instanceof Error ? e.message : "Eroare la trimiterea răspunsului."); }
     finally { setSendingResponse(false); }
