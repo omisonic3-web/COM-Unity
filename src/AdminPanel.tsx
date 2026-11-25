@@ -1,11 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2 } from 'lucide-react';
+import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2, Info, Save } from 'lucide-react';
 
 type Member = { id: string; display_name: string; email: string; role: string; verified: number };
 type Stats = { users: number; requests: number; offers: number; projects: number };
 type Category = { id: string; name: string; kind: 'both' | 'request' | 'offer'; active: number };
 type Zone = { id: string; name: string; active: number };
 type UsefulLink = { id: string; title: string; url: string; description: string; active: number };
+type AboutContent = { title: string; intro: string; mission: string; vision: string; values_text: string; contact_email: string; contact_location: string };
 
 function AdminPanel() {
   const [stats, setStats] = useState<Stats | null>(null);
@@ -13,6 +14,7 @@ function AdminPanel() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [links, setLinks] = useState<UsefulLink[]>([]);
+  const [about, setAbout] = useState<AboutContent>({ title: '', intro: '', mission: '', vision: '', values_text: '', contact_email: '', contact_location: '' });
   const [linkTitle, setLinkTitle] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [linkDescription, setLinkDescription] = useState('');
@@ -28,22 +30,26 @@ function AdminPanel() {
   async function load() {
     setLoading(true); setError('');
     try {
-      const [overviewResponse, catalogResponse, linksResponse] = await Promise.all([
+      const [overviewResponse, catalogResponse, linksResponse, aboutResponse] = await Promise.all([
         fetch('/api/admin', { credentials: 'same-origin', cache: 'no-store' }),
         fetch('/api/admin/catalog', { credentials: 'same-origin', cache: 'no-store' }),
-        fetch('/api/admin/links', { credentials: 'same-origin', cache: 'no-store' })
+        fetch('/api/admin/links', { credentials: 'same-origin', cache: 'no-store' }),
+        fetch('/api/admin/about', { credentials: 'same-origin', cache: 'no-store' })
       ]);
       const overview = await overviewResponse.json().catch(() => ({}));
       const catalog = await catalogResponse.json().catch(() => ({}));
       const linkData = await linksResponse.json().catch(() => ({}));
+      const aboutData = await aboutResponse.json().catch(() => ({}));
       if (!overviewResponse.ok) throw new Error(overview.error || 'Datele nu au putut fi încărcate.');
       if (!catalogResponse.ok) throw new Error(catalog.error || 'Temele și zonele nu au putut fi încărcate.');
       if (!linksResponse.ok) throw new Error(linkData.error || 'Linkurile utile nu au putut fi încărcate.');
+      if (!aboutResponse.ok) throw new Error(aboutData.error || 'Prezentarea Despre noi nu a putut fi încărcată.');
       setStats(overview.stats);
       setMembers(overview.members || []);
       setCategories(catalog.categories || []);
       setZones(catalog.zones || []);
       setLinks(linkData.links || []);
+      setAbout(aboutData.content || { title: '', intro: '', mission: '', vision: '', values_text: '', contact_email: '', contact_location: '' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'A apărut o eroare.');
     } finally { setLoading(false); }
@@ -118,6 +124,28 @@ function AdminPanel() {
       setSuccess('Linkul a fost șters.');
       await load();
     } catch (err) { setError(err instanceof Error ? err.message : 'A apărut o eroare.'); }
+  }
+
+
+  async function saveAbout(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true); setError(''); setSuccess('');
+    try {
+      const response = await fetch('/api/admin/about', {
+        method: 'PATCH', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(about)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Prezentarea nu a putut fi salvată.');
+      setSuccess('Prezentarea Despre noi a fost salvată.');
+      await load();
+    } catch (err) { setError(err instanceof Error ? err.message : 'A apărut o eroare.'); }
+    finally { setSaving(false); }
+  }
+
+  function updateAbout(field: keyof AboutContent, value: string) {
+    setAbout(current => ({ ...current, [field]: value }));
   }
 
   async function toggleItem(type: 'category' | 'zone', id: string) {
@@ -222,8 +250,23 @@ function AdminPanel() {
 
       <div className="admin-coming-grid">
         <article className="dashboard-panel"><span className="admin-feature-icon"><ShieldCheck size={20} /></span><h3>Moderare</h3><p>Instrumente pentru verificarea și gestionarea conținutului publicat.</p><span className="admin-feature-status">Modul următor</span></article>
-        <article className="dashboard-panel"><span className="admin-feature-icon"><HeartHandshake size={20} /></span><h3>Despre noi</h3><p>Editarea prezentării publice și a informațiilor despre COM-Unity.</p><span className="admin-feature-status">Modul următor</span></article>
+        
       </div>
+      <section className="dashboard-panel admin-catalog admin-about-editor">
+        <div className="panel-heading"><div><h2><Info size={18} /> Despre noi</h2><p>Editează prezentarea care va fi vizibilă tuturor membrilor platformei.</p></div></div>
+        <form className="admin-about-form" onSubmit={event => void saveAbout(event)}>
+          <label>Titlu<input value={about.title} onChange={event => updateAbout('title', event.target.value)} minLength={2} maxLength={100} required /></label>
+          <label>Prezentare generală<textarea value={about.intro} onChange={event => updateAbout('intro', event.target.value)} minLength={10} maxLength={1200} rows={4} required /></label>
+          <label>Misiunea noastră<textarea value={about.mission} onChange={event => updateAbout('mission', event.target.value)} maxLength={1200} rows={3} /></label>
+          <label>Viziunea noastră<textarea value={about.vision} onChange={event => updateAbout('vision', event.target.value)} maxLength={1200} rows={3} /></label>
+          <label>Valorile noastre<textarea value={about.values_text} onChange={event => updateAbout('values_text', event.target.value)} maxLength={1200} rows={2} /></label>
+          <div className="admin-about-row">
+            <label>Email de contact<input type="email" value={about.contact_email} onChange={event => updateAbout('contact_email', event.target.value)} maxLength={160} placeholder="contact@com-unity.ro" /></label>
+            <label>Localitate / adresă<input value={about.contact_location} onChange={event => updateAbout('contact_location', event.target.value)} maxLength={160} placeholder="Localitate, județ" /></label>
+          </div>
+          <div className="admin-links-form-actions"><button type="submit" className="button button-primary" disabled={saving}><Save size={16}/>{saving ? 'Se salvează...' : 'Salvează prezentarea'}</button></div>
+        </form>
+      </section>
     </section>
   );
 }
