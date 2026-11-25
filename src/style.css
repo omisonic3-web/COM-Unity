@@ -1379,3 +1379,37 @@ footer .brand {
 .dashboard-sidebar .dashboard-nav-item span:not(.nav-active-mark):not(.message-unread-badge) {
   opacity: 1;
 }
+
+
+/* Search help requests and offers by location */
+.requests-toolbar { flex-wrap: wrap; }
+.zone-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1 1 230px;
+  max-width: 360px;
+  min-width: 180px;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid var(--border, rgba(255,255,255,.13));
+  border-radius: 11px;
+  background: var(--theme-surface, rgba(255,255,255,.04));
+  color: var(--muted, #9ca3af);
+}
+.zone-search:focus-within { border-color: var(--theme-accent, #48c9e8); box-shadow: 0 0 0 3px var(--theme-accent-soft, rgba(72,201,232,.1)); }
+.zone-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--theme-text, inherit);
+  font: inherit;
+  font-size: 12px;
+}
+.zone-search input::placeholder { color: var(--theme-muted, #9ca3af); opacity: 1; }
+.zone-search button { display: grid; place-items: center; padding: 3px; border: 0; background: transparent; color: inherit; cursor: pointer; }
+.dashboard-layout[data-theme="light"] .zone-search { background: #fff; border-color: #cbd5e5; color: #52617a; }
+.dashboard-layout[data-theme="light"] .zone-search input { color: #202b43; }
+@media(max-width:650px) { .zone-search { max-width: none; flex-basis: 100%; order: 3; } }
