@@ -1,16 +1,22 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, Plus, MapPin, Tags, Power } from 'lucide-react';
+import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2 } from 'lucide-react';
 
 type Member = { id: string; display_name: string; email: string; role: string; verified: number };
 type Stats = { users: number; requests: number; offers: number; projects: number };
 type Category = { id: string; name: string; kind: 'both' | 'request' | 'offer'; active: number };
 type Zone = { id: string; name: string; active: number };
+type UsefulLink = { id: string; title: string; url: string; description: string; active: number };
 
 function AdminPanel() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
+  const [links, setLinks] = useState<UsefulLink[]>([]);
+  const [linkTitle, setLinkTitle] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [linkDescription, setLinkDescription] = useState('');
+  const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -24,16 +30,21 @@ function AdminPanel() {
     try {
       const [overviewResponse, catalogResponse] = await Promise.all([
         fetch('/api/admin', { credentials: 'same-origin', cache: 'no-store' }),
-        fetch('/api/admin/catalog', { credentials: 'same-origin', cache: 'no-store' })
+        fetch('/api/admin/catalog', { credentials: 'same-origin', cache: 'no-store' }),
+        fetch('/api/admin/links', { credentials: 'same-origin', cache: 'no-store' })
       ]);
       const overview = await overviewResponse.json().catch(() => ({}));
       const catalog = await catalogResponse.json().catch(() => ({}));
+      const linksResponse = await fetch('/api/admin/links', { credentials: 'same-origin', cache: 'no-store' });
+      const linkData = await linksResponse.json().catch(() => ({}));
       if (!overviewResponse.ok) throw new Error(overview.error || 'Datele nu au putut fi încărcate.');
       if (!catalogResponse.ok) throw new Error(catalog.error || 'Temele și zonele nu au putut fi încărcate.');
+      if (!linksResponse.ok) throw new Error(linkData.error || 'Linkurile utile nu au putut fi încărcate.');
       setStats(overview.stats);
       setMembers(overview.members || []);
       setCategories(catalog.categories || []);
       setZones(catalog.zones || []);
+      setLinks(linkData.links || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'A apărut o eroare.');
     } finally { setLoading(false); }
@@ -59,6 +70,55 @@ function AdminPanel() {
       await load();
     } catch (err) { setError(err instanceof Error ? err.message : 'A apărut o eroare.'); }
     finally { setSaving(false); }
+  }
+
+  async function saveLink(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true); setError(''); setSuccess('');
+    try {
+      const response = await fetch('/api/admin/links', {
+        method: editingLinkId ? 'PATCH' : 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingLinkId, title: linkTitle, url: linkUrl, description: linkDescription })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Linkul nu a putut fi salvat.');
+      setLinkTitle(''); setLinkUrl(''); setLinkDescription(''); setEditingLinkId(null);
+      setSuccess(editingLinkId ? 'Linkul a fost actualizat.' : 'Linkul a fost adăugat.');
+      await load();
+    } catch (err) { setError(err instanceof Error ? err.message : 'A apărut o eroare.'); }
+    finally { setSaving(false); }
+  }
+
+  async function toggleLink(link: UsefulLink) {
+    setError(''); setSuccess('');
+    try {
+      const response = await fetch('/api/admin/links', {
+        method: 'PATCH', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: link.id, active: !link.active })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Starea linkului nu a putut fi modificată.');
+      setSuccess('Starea linkului a fost actualizată.');
+      await load();
+    } catch (err) { setError(err instanceof Error ? err.message : 'A apărut o eroare.'); }
+  }
+
+  async function deleteLink(id: string) {
+    if (!window.confirm('Sigur vrei să ștergi acest link?')) return;
+    setError(''); setSuccess('');
+    try {
+      const response = await fetch('/api/admin/links', {
+        method: 'DELETE', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Linkul nu a putut fi șters.');
+      setSuccess('Linkul a fost șters.');
+      await load();
+    } catch (err) { setError(err instanceof Error ? err.message : 'A apărut o eroare.'); }
   }
 
   async function toggleItem(type: 'category' | 'zone', id: string) {
@@ -128,6 +188,30 @@ function AdminPanel() {
         </div>
       </section>
 
+      <section className="dashboard-panel admin-catalog">
+        <div className="panel-heading"><div><h2><Link2 size={18} /> Linkuri utile</h2><p>Resurse și pagini recomandate pentru membrii comunității.</p></div></div>
+        <form className="admin-links-form" onSubmit={event => void saveLink(event)}>
+          <input value={linkTitle} onChange={event => setLinkTitle(event.target.value)} minLength={2} maxLength={100} placeholder="Titlul linkului" required />
+          <input type="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://exemplu.ro" required />
+          <input value={linkDescription} onChange={event => setLinkDescription(event.target.value)} maxLength={300} placeholder="Descriere scurtă (opțional)" />
+          <div className="admin-links-form-actions">
+            {editingLinkId && <button type="button" className="button button-outline" onClick={() => { setEditingLinkId(null); setLinkTitle(''); setLinkUrl(''); setLinkDescription(''); }}>Anulează editarea</button>}
+            <button className="button button-primary" disabled={saving}><Plus size={16} /> {editingLinkId ? 'Salvează modificările' : 'Adaugă link'}</button>
+          </div>
+        </form>
+        <div className="admin-catalog-list">
+          {links.map(link => <div className={link.active ? 'admin-catalog-item admin-link-item' : 'admin-catalog-item admin-link-item is-inactive'} key={link.id}>
+            <div><strong>{link.title}</strong><small>{link.url}</small>{link.description && <small>{link.description}</small>}<small>{link.active ? 'Vizibil membrilor' : 'Dezactivat'}</small></div>
+            <div className="admin-link-actions">
+              <button type="button" className="admin-catalog-toggle" onClick={() => { setEditingLinkId(link.id); setLinkTitle(link.title); setLinkUrl(link.url); setLinkDescription(link.description || ''); }} title="Editează"><Pencil size={15}/><span>Editează</span></button>
+              <button type="button" className="admin-catalog-toggle" onClick={() => void toggleLink(link)} title={link.active ? 'Dezactivează' : 'Activează'}><Power size={15}/><span>{link.active ? 'Dezactivează' : 'Activează'}</span></button>
+              <button type="button" className="admin-catalog-toggle admin-link-delete" onClick={() => void deleteLink(link.id)} title="Șterge"><Trash2 size={15}/><span>Șterge</span></button>
+            </div>
+          </div>)}
+          {!loading && links.length === 0 && <p className="admin-muted">Nu ai adăugat încă linkuri utile.</p>}
+        </div>
+      </section>
+
       <section className="dashboard-panel admin-members">
         <div className="panel-heading"><div><h2>Membrii platformei</h2><p>Conturi înregistrate și roluri atribuite.</p></div><Users size={19} /></div>
         {loading ? <p className="admin-muted">Se încarcă membrii...</p> : members.length === 0 ? <p className="admin-muted">Nu există membri de afișat.</p> : (
@@ -139,7 +223,7 @@ function AdminPanel() {
 
       <div className="admin-coming-grid">
         <article className="dashboard-panel"><span className="admin-feature-icon"><ShieldCheck size={20} /></span><h3>Moderare</h3><p>Instrumente pentru verificarea și gestionarea conținutului publicat.</p><span className="admin-feature-status">Modul următor</span></article>
-        <article className="dashboard-panel"><span className="admin-feature-icon"><FolderKanban size={20} /></span><h3>Linkuri utile</h3><p>Administrarea resurselor și legăturilor afișate comunității.</p><span className="admin-feature-status">Modul următor</span></article>
+        <article className="dashboard-panel"><span className="admin-feature-icon"><ShieldCheck size={20} /></span><h3>Moderare</h3><p>Instrumente pentru verificarea și gestionarea conținutului publicat.</p><span className="admin-feature-status">Modul următor</span></article>
         <article className="dashboard-panel"><span className="admin-feature-icon"><HeartHandshake size={20} /></span><h3>Despre noi</h3><p>Editarea prezentării publice și a informațiilor despre COM-Unity.</p><span className="admin-feature-status">Modul următor</span></article>
       </div>
     </section>
