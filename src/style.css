@@ -1536,3 +1536,20 @@ footer .brand {
 .auth-modal .registration-consents .consent-option { display:flex; align-items:flex-start; gap:10px; color:#cbd7e8; font-size:12px; line-height:1.5; font-weight:500; }
 .auth-modal .registration-consents .consent-option input[type="checkbox"] { flex:0 0 17px; width:17px; min-height:17px; height:17px; margin:2px 0 0; padding:0; accent-color:#56d9f5; }
 .registration-consents a { color:#7ee2f2; text-decoration:underline; text-underline-offset:2px; }
+
+
+/* Self-service account deletion */
+.account-deletion-zone{display:grid;gap:16px;margin-top:24px;padding:20px;border:1px solid rgba(220,75,75,.42);border-radius:16px;background:rgba(190,45,55,.055)}
+.account-deletion-kicker{font-size:10px;font-weight:800;letter-spacing:.12em;color:#e28a8a}
+.account-deletion-zone h3{margin:6px 0 7px;font-size:17px;color:var(--text-primary,#f4f7fb)}
+.account-deletion-zone p{max-width:760px;margin:0;color:var(--theme-muted,#aebbd0);font-size:12px;line-height:1.65}
+.account-deletion-trigger,.account-deletion-confirm{justify-self:start;border:1px solid #b94d55;background:rgba(185,77,85,.13);color:#f0a0a5}
+.account-deletion-trigger:hover,.account-deletion-confirm:hover{background:rgba(185,77,85,.23)}
+.account-deletion-admin-note{padding:12px 14px;border-radius:10px;background:rgba(217,160,60,.1);border:1px solid rgba(217,160,60,.3);color:var(--theme-muted,#d8c49b)!important}
+.account-deletion-form{display:grid;gap:13px;max-width:620px}
+.account-deletion-form label{display:grid;gap:6px;font-size:12px;font-weight:650;color:var(--text-primary,#e8eef8)}
+.account-deletion-form input{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--border-color,rgba(148,163,184,.3));border-radius:9px;background:var(--panel-secondary,rgba(0,0,0,.12));color:inherit;font:inherit}
+.account-deletion-form ul{margin:0;padding-left:19px;color:var(--theme-muted,#aebbd0);font-size:12px;line-height:1.7}
+.dashboard-layout[data-theme="light"] .account-deletion-zone h3,.dashboard-layout[data-theme="light"] .account-deletion-form label{color:#26344b}
+.dashboard-layout[data-theme="light"] .account-deletion-zone p,.dashboard-layout[data-theme="light"] .account-deletion-form ul{color:#52617a}
+@media(max-width:520px){.account-deletion-zone{padding:14px}.account-deletion-form .request-form-footer{flex-wrap:wrap}.account-deletion-confirm{width:100%}}
