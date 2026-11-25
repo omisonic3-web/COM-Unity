@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Plus, RefreshCw, CalendarDays, Trash2, Users, X, FolderKanban, UserPlus, UserMinus, CheckCircle2, Circle } from "lucide-react";
+import ProjectRatings from "./ProjectRatings";
 
 type Project = {
   id: string;
@@ -163,6 +164,7 @@ function Projects({ userId }: { userId: string }) {
             <button onClick={() => void toggleMembership(project)}>{project.is_member ? <><UserMinus size={15} /> Retrage înscrierea</> : <><UserPlus size={15} /> Participă la proiect</>}</button>
           ) : <span>Înscrierile sunt închise.</span>}
         </div>
+        {project.status === "completed" && <ProjectRatings projectId={project.id} />}
       </article>)}</div>
     }
   </section>;
