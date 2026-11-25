@@ -22,6 +22,53 @@ async function hashToken(token) {
   return toHex(new Uint8Array(digest));
 }
 
+const LOGIN_WINDOW_SECONDS = 15 * 60;
+const LOGIN_MAX_FAILURES = 5;
+
+async function getLoginAttemptKey(request, email) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  return hashToken(`${ip}| ${email}`);
+}
+
+async function getLoginAttemptState(env, keyHash, now) {
+  const row = await env.DB.prepare(
+    "SELECT window_started_at, attempts FROM auth_login_attempts WHERE key_hash = ?"
+  ).bind(keyHash).first();
+
+  if (!row || now - Number(row.window_started_at) >= LOGIN_WINDOW_SECONDS) {
+    return { attempts: 0, retryAfter: 0 };
+  }
+
+  return {
+    attempts: Number(row.attempts),
+    retryAfter: Math.max(1, LOGIN_WINDOW_SECONDS - (now - Number(row.window_started_at)))
+  };
+}
+
+async function recordFailedLogin(env, keyHash, now) {
+  await env.DB.prepare(`
+    INSERT INTO auth_login_attempts (key_hash, window_started_at, attempts, updated_at)
+    VALUES (?, ?, 1, ?)
+    ON CONFLICT(key_hash) DO UPDATE SET
+      attempts = CASE
+        WHEN excluded.updated_at - auth_login_attempts.window_started_at >= ? THEN 1
+        ELSE auth_login_attempts.attempts + 1
+      END,
+      window_started_at = CASE
+        WHEN excluded.updated_at - auth_login_attempts.window_started_at >= ? THEN excluded.window_started_at
+        ELSE auth_login_attempts.window_started_at
+      END,
+      updated_at = excluded.updated_at
+  `).bind(keyHash, now, now, LOGIN_WINDOW_SECONDS, LOGIN_WINDOW_SECONDS).run();
+
+  // Remove old hashed identifiers so they are not retained indefinitely.
+  await env.DB.prepare(
+    "DELETE FROM auth_login_attempts WHERE updated_at < ?"
+  ).bind(now - 24 * 60 * 60).run();
+
+  return getLoginAttemptState(env, keyHash, now);
+}
+
 async function verifyPassword(password, storedHash) {
   const parts = storedHash.split("$");
 
@@ -113,6 +160,23 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
+    const now = Math.floor(Date.now() / 1000);
+    const attemptKeyHash = await getLoginAttemptKey(request, email);
+    const attemptState = await getLoginAttemptState(env, attemptKeyHash, now);
+
+    if (attemptState.attempts >= LOGIN_MAX_FAILURES) {
+      return Response.json(
+        { error: "Prea multe încercări de autentificare. Încearcă din nou peste 15 minute." },
+        {
+          status: 429,
+          headers: {
+            "Cache-Control": "no-store",
+            "Retry-After": String(attemptState.retryAfter)
+          }
+        }
+      );
+    }
+
     const user = await env.DB.prepare(`
       SELECT
         id,
@@ -127,9 +191,16 @@ export async function onRequestPost({ request, env }) {
     `).bind(email).first();
 
     if (!user) {
+      const failed = await recordFailedLogin(env, attemptKeyHash, now);
+      if (failed.attempts >= LOGIN_MAX_FAILURES) {
+        return Response.json(
+          { error: "Prea multe încercări de autentificare. Încearcă din nou peste 15 minute." },
+          { status: 429, headers: { "Cache-Control": "no-store", "Retry-After": String(failed.retryAfter) } }
+        );
+      }
       return Response.json(
         { error: "Invalid email or password." },
-        { status: 401 }
+        { status: 401, headers: { "Cache-Control": "no-store" } }
       );
     }
 
@@ -139,13 +210,21 @@ export async function onRequestPost({ request, env }) {
     );
 
     if (!passwordValid) {
+      const failed = await recordFailedLogin(env, attemptKeyHash, now);
+      if (failed.attempts >= LOGIN_MAX_FAILURES) {
+        return Response.json(
+          { error: "Prea multe încercări de autentificare. Încearcă din nou peste 15 minute." },
+          { status: 429, headers: { "Cache-Control": "no-store", "Retry-After": String(failed.retryAfter) } }
+        );
+      }
       return Response.json(
         { error: "Invalid email or password." },
-        { status: 401 }
+        { status: 401, headers: { "Cache-Control": "no-store" } }
       );
     }
 
     if (user.verified !== 1) {
+      await env.DB.prepare("DELETE FROM auth_login_attempts WHERE key_hash = ?").bind(attemptKeyHash).run();
       return Response.json(
         {
           error: "Email address not verified.",
@@ -154,6 +233,8 @@ export async function onRequestPost({ request, env }) {
         { status: 403 }
       );
     }
+
+    await env.DB.prepare("DELETE FROM auth_login_attempts WHERE key_hash = ?").bind(attemptKeyHash).run();
 
     const tokenBytes = crypto.getRandomValues(new Uint8Array(32));
     const token = toHex(tokenBytes);
