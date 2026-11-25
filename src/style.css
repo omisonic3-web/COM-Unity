@@ -1433,3 +1433,10 @@ footer .brand {
 .dashboard-layout[data-theme="light"] .profile-avatar-picker-heading span,.dashboard-layout[data-theme="light"] .profile-avatar-saving{color:#52617a}
 .dashboard-layout[data-theme="light"] .profile-avatar-option{background:#edf1f8}
 @media(max-width:520px){.profile-avatar-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.profile-avatar-option{padding:5px}.profile-avatar-option .avatar-illustration{width:52px;height:52px}}
+
+/* Agricultural avatar gallery: 3x3 cards with readable character names */
+.profile-avatar-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.profile-avatar-option{min-height:112px;align-content:center;gap:7px}
+.profile-avatar-label{display:block;max-width:100%;font-size:10px;line-height:1.3;font-weight:650;color:var(--theme-text,#f3f7ff);text-align:center}
+.dashboard-layout[data-theme="light"] .profile-avatar-label{color:#34415a}
+@media(max-width:520px){.profile-avatar-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.profile-avatar-option{min-height:100px}.profile-avatar-label{font-size:9px}}
