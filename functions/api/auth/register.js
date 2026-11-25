@@ -1,5 +1,6 @@
 
-const ITERATIONS = 310000;
+// Cloudflare Workers WebCrypto supports at most 100,000 PBKDF2 iterations.
+const ITERATIONS = 100000;
 const TOKEN_EXPIRY_HOURS = 24;
 
 function toBase64(bytes) {
