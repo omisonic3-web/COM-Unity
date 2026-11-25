@@ -1091,3 +1091,28 @@ footer .brand {
 .useful-links-empty strong{color:#eaf2ff;font-size:14px}
 .useful-links-empty p{margin:0}
 @media(max-width:700px){.admin-links-form{grid-template-columns:1fr}.admin-links-form input:nth-child(3),.admin-links-form-actions{grid-column:auto}.admin-link-item{flex-direction:column}.admin-link-actions{justify-content:flex-start}.useful-links-heading{flex-direction:column}.useful-links-grid{grid-template-columns:1fr}}
+
+
+/* About Us member page and admin editor */
+.about-us-section{display:flex;flex-direction:column;gap:15px}
+.about-hero{padding:30px;background:radial-gradient(ellipse at 90% 10%,rgba(99,102,241,.18),transparent 45%),linear-gradient(135deg,rgba(45,212,191,.08),rgba(99,102,241,.07))}
+.about-hero h2{margin:13px 0 10px;color:#f1f6ff;font:700 29px 'Space Grotesk',sans-serif;letter-spacing:-.7px}
+.about-hero>p{max-width:850px;margin:0;color:#bdcbe0;font-size:14px;line-height:1.8;white-space:pre-wrap}
+.about-values-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.about-info-card,.about-values-card,.about-contact-card{padding:22px}
+.about-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#63dff21a;color:#70e0f2}
+.about-info-card h3,.about-values-card h3,.about-contact-card h3{margin:14px 0 8px;color:#edf5ff;font-size:16px}
+.about-info-card p,.about-values-card p{margin:0;color:#aab9ce;font-size:13px;line-height:1.8;white-space:pre-wrap}
+.about-values-card{display:flex;align-items:flex-start;gap:15px}
+.about-values-card h3{margin-top:1px}
+.about-contact-card a,.about-contact-card p{display:flex;align-items:center;gap:9px;color:#9ddff0;font-size:13px;text-decoration:none}
+.about-contact-card p{color:#aab9ce}
+.about-signoff{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;color:#7f93ad;font-size:12px}
+.about-loading{padding:28px;color:#aab9ce;font-size:13px}
+.admin-about-form{display:flex;flex-direction:column;gap:13px}
+.admin-about-form label{display:flex;flex-direction:column;gap:7px;color:#b9c8dc;font-size:12px;font-weight:650}
+.admin-about-form input,.admin-about-form textarea{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #ffffff20;border-radius:10px;background:#101d2e;color:#eaf2ff;font:inherit;font-size:12px;line-height:1.6}
+.admin-about-form textarea{resize:vertical}
+.admin-about-form input:focus,.admin-about-form textarea:focus{outline:1px solid #70dff2;border-color:#70dff2}
+.admin-about-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:650px){.about-values-grid,.admin-about-row{grid-template-columns:1fr}.about-hero{padding:22px}.about-hero h2{font-size:24px}.about-info-card,.about-values-card,.about-contact-card{padding:17px}}
