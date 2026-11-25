@@ -12,7 +12,7 @@ type User = {
   role: string;
 };
 
-type AuthMode = 'login' | 'register';
+type AuthMode = 'login' | 'register' | 'forgot';
 
 function App() {
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
@@ -47,61 +47,26 @@ function App() {
   async function handleAuthSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    setLoading(true);
-    setError('');
-    setNotice('');
-
-    const payload = authMode === 'register'
-      ? {
-          displayName: String(form.get('displayName') || '').trim(),
-          email: String(form.get('email') || '').trim(),
-          password: String(form.get('password') || ''),
-          website: String(form.get('website') || ''),
-          ageConfirmed: form.get('ageConfirmed') === 'on',
-          termsAccepted: form.get('termsAccepted') === 'on',
-          privacyAcknowledged: form.get('privacyAcknowledged') === 'on'
-        }
-      : {
-          email: String(form.get('email') || '').trim(),
-          password: String(form.get('password') || '')
-        };
-
+    setLoading(true); setError(''); setNotice('');
+    const email = String(form.get('email') || '').trim();
+    const password = String(form.get('password') || '');
+    const isRegister = authMode === 'register';
+    const isForgot = authMode === 'forgot';
+    const endpoint = isRegister ? '/api/auth/register' : isForgot ? '/api/auth/forgot-password' : '/api/auth/login';
+    const payload = isRegister ? { displayName: String(form.get('displayName') || '').trim(), email, password, website: String(form.get('website') || ''), ageConfirmed: form.get('ageConfirmed') === 'on', termsAccepted: form.get('termsAccepted') === 'on', privacyAcknowledged: form.get('privacyAcknowledged') === 'on' } : isForgot ? { email } : { email, password };
     try {
-      const response = await fetch(
-        authMode === 'register' ? '/api/auth/register' : '/api/auth/login',
-        {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }
-      );
+      const response = await fetch(endpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await response.json().catch(() => ({}));
-
       if (!response.ok) {
-        if (data.code === 'EMAIL_NOT_VERIFIED') {
-          throw new Error('Adresa de email nu a fost confirmată. Deschide linkul primit prin email înainte de autentificare.');
-        }
-        const diagnostic = typeof data.diagnostic === 'string' ? ` (Etapă: ${data.diagnostic})` : '';
-        const diagnosticReason = typeof data.diagnosticReason === 'string' ? ` — ${data.diagnosticReason}` : '';
-        throw new Error((data.error || 'Solicitarea nu a putut fi procesată.') + diagnostic + diagnosticReason);
+        if (data.code === 'EMAIL_NOT_VERIFIED') throw new Error('Adresa de email nu a fost confirmată. Deschide linkul primit prin email înainte de autentificare.');
+        throw new Error(data.error || 'Solicitarea nu a putut fi procesată.');
       }
-
-      if (authMode === 'register') {
-        setAuthMode(null);
-        setNotice('Contul a fost creat. Verifică inboxul și confirmă adresa de email folosind linkul trimis de COM-Unity.');
-      } else {
-        setUser(data.user as User);
-        setAuthMode(null);
-        setNotice('Autentificare reușită. Bine ai revenit!');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'A apărut o eroare. Încearcă din nou.');
-    } finally {
-      setLoading(false);
-    }
+      if (isRegister) { setAuthMode(null); setNotice('Contul a fost creat. Verifică inboxul și confirmă adresa de email folosind linkul trimis de COM-Unity.'); }
+      else if (isForgot) { setAuthMode('login'); setNotice('Dacă există un cont verificat cu această adresă, vei primi un email cu instrucțiunile de resetare.'); }
+      else { setUser(data.user as User); setAuthMode(null); setNotice('Autentificare reușită. Bine ai revenit!'); }
+    } catch (err) { setError(err instanceof Error ? err.message : 'A apărut o eroare. Încearcă din nou.'); }
+    finally { setLoading(false); }
   }
-
   async function handleLogout() {
     setLoading(true);
     try {
@@ -260,11 +225,11 @@ function App() {
             </button>
             <div className="auth-mark"><Globe2 size={25} /></div>
             <span className="eyebrow">COM-Unity • Comunitate</span>
-            <h2 id="auth-title">{authMode === 'register' ? 'Creează un cont' : 'Bine ai revenit'}</h2>
+            <h2 id="auth-title">{authMode === 'register' ? 'Creează un cont' : authMode === 'forgot' ? 'Recuperare parolă' : 'Bine ai revenit'}</h2>
             <p className="auth-subtitle">
               {authMode === 'register'
                 ? 'Alătură-te oamenilor care fac bine împreună.'
-                : 'Autentifică-te pentru a continua.'}
+                : authMode === 'forgot' ? 'Introdu adresa de email asociată contului.' : 'Autentifică-te pentru a continua.'}
             </p>
 
             <form onSubmit={handleAuthSubmit}>
@@ -278,10 +243,12 @@ function App() {
                 Adresă de email
                 <input name="email" type="email" maxLength={254} autoComplete="email" placeholder="nume@exemplu.ro" required />
               </label>
-              <label>
-                Parolă
-                <input name="password" type="password" minLength={authMode === 'register' ? 12 : 1} maxLength={128} autoComplete={authMode === 'register' ? 'new-password' : 'current-password'} placeholder={authMode === 'register' ? 'Minimum 12 caractere' : 'Parola ta'} required />
-              </label>
+              {authMode !== 'forgot' && (
+                <label>
+                  Parolă
+                  <input name="password" type="password" minLength={authMode === 'register' ? 12 : 1} maxLength={128} autoComplete={authMode === 'register' ? 'new-password' : 'current-password'} placeholder={authMode === 'register' ? 'Minimum 12 caractere' : 'Parola ta'} required />
+                </label>
+              )}
               {authMode === 'register' && (
                 <fieldset className="registration-consents">
                   <legend>Confirmări obligatorii</legend>
@@ -306,17 +273,18 @@ function App() {
               )}
               {error && <p className="form-error" role="alert">{error}</p>}
               <button className="button button-primary auth-submit" type="submit" disabled={loading}>
-                {loading ? <><LoaderCircle className="spin" size={18} /> Se procesează...</> : authMode === 'register' ? 'Creează contul' : 'Autentificare'}
+                {loading ? <><LoaderCircle className="spin" size={18} /> Se procesează...</> : authMode === 'register' ? 'Creează contul' : authMode === 'forgot' ? 'Trimite instrucțiunile' : 'Autentificare'}
               </button>
             </form>
 
             <p className="auth-switch">
-              {authMode === 'register' ? 'Ai deja un cont?' : 'Nu ai încă un cont?'}
+              {authMode === 'login' ? 'Ai uitat parola?' : authMode === 'forgot' ? 'Îți amintești parola?' : 'Ai deja un cont?'}
               {' '}
-              <button onClick={() => { setError(''); setAuthMode(authMode === 'register' ? 'login' : 'register'); }}>
-                {authMode === 'register' ? 'Autentifică-te' : 'Înregistrează-te'}
+              <button onClick={() => { setError(''); setNotice(''); setAuthMode(authMode === 'login' ? 'forgot' : 'login'); }}>
+                {authMode === 'login' ? 'Recuperează parola' : authMode === 'forgot' ? 'Revino la autentificare' : 'Autentifică-te'}
               </button>
             </p>
+            {authMode === 'register' && <p className="auth-switch">Nu ai încă un cont? <button onClick={() => { setError(''); setAuthMode('register'); }}>Înregistrează-te</button></p>}
             <p className="auth-legal">Prin continuare, folosești COM-Unity în mod responsabil și respecți comunitatea.</p>
           </section>
         </div>
