@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import HelpRequests from './HelpRequests';
 import HelpOffers from './HelpOffers';
@@ -7,7 +7,7 @@ import Messages from './Messages';
 import {
   Globe2, LayoutDashboard, HandHeart, HeartHandshake, FolderKanban,
   MessageCircle, UserRound, LogOut, ArrowUpRight, Compass,
-  ShieldCheck, Clock3, ChevronRight, Bell, Pencil, Save, X
+  ShieldCheck, Clock3, ChevronRight, Bell, Pencil, Save
 } from 'lucide-react';
 
 type DashboardUser = {
@@ -149,7 +149,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
     document.addEventListener('visibilitychange', onVisible);
     return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisible); if (noticeTimer.current) clearTimeout(noticeTimer.current); if (activityNoticeTimer.current) clearTimeout(activityNoticeTimer.current); };
   }, [refreshUnread, refreshNotifications]);
-  async function saveProfile(event: React.FormEvent<HTMLFormElement>) {
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const displayName = profileName.trim();
     if (displayName.length < 2 || displayName.length > 80) {
