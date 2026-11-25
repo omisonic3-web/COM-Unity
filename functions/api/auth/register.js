@@ -1,7 +1,6 @@
 
 const ITERATIONS = 310000;
 const TOKEN_EXPIRY_HOURS = 24;
-const SITE_URL = "https://com-unity.pages.dev";
 
 function toBase64(bytes) {
   let binary = "";
@@ -61,9 +60,9 @@ async function hashToken(token) {
   return toHex(new Uint8Array(digest));
 }
 
-async function sendVerificationEmail(email, displayName, token, apiKey) {
+async function sendVerificationEmail(email, displayName, token, apiKey, siteUrl) {
   const verificationUrl =
-    `${SITE_URL}/verify-email.html?token=${encodeURIComponent(token)}`;
+    `${siteUrl}/verify-email.html?token=${encodeURIComponent(token)}`;
 
   const safeName = escapeHtml(displayName);
 
@@ -204,7 +203,8 @@ export async function onRequestPost({ request, env }) {
         email,
         displayName,
         token,
-        env.RESEND_API_KEY
+        env.RESEND_API_KEY,
+        new URL(request.url).origin
       );
 
     } catch (error) {
