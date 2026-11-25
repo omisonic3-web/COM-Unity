@@ -73,7 +73,7 @@ async function sendVerificationEmail(email, displayName, token, apiKey, siteUrl)
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      from: "COM-Unity <onboarding@resend.dev>",
+      from: "COM-Unity <noreply@mail.com-unity.ro>",
       to: [email],
       subject: "Confirmă adresa de email — COM-Unity",
       html: `
