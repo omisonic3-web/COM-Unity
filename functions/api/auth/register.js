@@ -202,7 +202,8 @@ export async function onRequestPost({ request, env }) {
       displayName
     ).run();
 
-    stage = "insert_registration_acceptance";
+    try {
+      stage = "insert_registration_acceptance";
     await env.DB.prepare(`
       INSERT INTO registration_acceptances (
         id,
@@ -222,7 +223,6 @@ export async function onRequestPost({ request, env }) {
       new Date().toISOString()
     ).run();
 
-    try {
       stage = "insert_verification_token";
       await env.DB.prepare(`
         INSERT INTO email_verification_tokens (
