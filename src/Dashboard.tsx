@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Globe2, LayoutDashboard, HandHeart, HeartHandshake, FolderKanban,
-  MessageCircle, UserRound, LogOut, ArrowUpRight, Plus, Compass,
+  MessageCircle, UserRound, LogOut, ArrowUpRight, Compass,
   ShieldCheck, Clock3, ChevronRight
 } from 'lucide-react';
 
