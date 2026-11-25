@@ -1,7 +1,7 @@
 
 import { requireUser, json, validOrigin } from "./_utils/session.js";
 
-const AVATAR_IDS = new Set(["person-1", "person-2", "person-3", "person-4", "person-5", "person-6", "person-7", "person-8"]);
+const AVATAR_IDS = new Set(["person-1", "person-2", "person-3", "person-4", "person-5", "person-6", "person-7", "person-8", "person-9"]);
 
 async function ensureProfileTable(env) {
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS user_profiles (user_id TEXT PRIMARY KEY, avatar_id TEXT NOT NULL DEFAULT 'person-1', updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)").run();
