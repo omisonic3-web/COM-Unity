@@ -222,7 +222,6 @@ function AdminPanel() {
 
       <div className="admin-coming-grid">
         <article className="dashboard-panel"><span className="admin-feature-icon"><ShieldCheck size={20} /></span><h3>Moderare</h3><p>Instrumente pentru verificarea și gestionarea conținutului publicat.</p><span className="admin-feature-status">Modul următor</span></article>
-        <article className="dashboard-panel"><span className="admin-feature-icon"><ShieldCheck size={20} /></span><h3>Moderare</h3><p>Instrumente pentru verificarea și gestionarea conținutului publicat.</p><span className="admin-feature-status">Modul următor</span></article>
         <article className="dashboard-panel"><span className="admin-feature-icon"><HeartHandshake size={20} /></span><h3>Despre noi</h3><p>Editarea prezentării publice și a informațiilor despre COM-Unity.</p><span className="admin-feature-status">Modul următor</span></article>
       </div>
     </section>
