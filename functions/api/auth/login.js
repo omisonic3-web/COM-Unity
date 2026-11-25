@@ -27,7 +27,7 @@ const LOGIN_MAX_FAILURES = 5;
 
 async function getLoginAttemptKey(request, email) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-  return hashToken(`${ip}| ${email}`);
+  return hashToken(`${ip}|${email}`);
 }
 
 async function getLoginAttemptState(env, keyHash, now) {
@@ -61,10 +61,12 @@ async function recordFailedLogin(env, keyHash, now) {
       updated_at = excluded.updated_at
   `).bind(keyHash, now, now, LOGIN_WINDOW_SECONDS, LOGIN_WINDOW_SECONDS).run();
 
-  // Remove old hashed identifiers so they are not retained indefinitely.
-  await env.DB.prepare(
-    "DELETE FROM auth_login_attempts WHERE updated_at < ?"
-  ).bind(now - 24 * 60 * 60).run();
+  // Periodically remove old hashed identifiers; keep each entry for at most about 24 hours.
+  if (now % 3600 < 10) {
+    await env.DB.prepare(
+      "DELETE FROM auth_login_attempts WHERE updated_at < ?"
+    ).bind(now - 24 * 60 * 60).run();
+  }
 
   return getLoginAttemptState(env, keyHash, now);
 }
