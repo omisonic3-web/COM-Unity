@@ -17,8 +17,15 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
+    if (!request.headers.get("content-type")?.includes("application/json")) {
+      return Response.json(
+        { error: "Content-Type must be application/json" },
+        { status: 415, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
     const body = await request.json();
-    const token = String(body.token || "");
+    const token = String(body.token || "").toLowerCase();
 
     if (!/^[a-f0-9]{64}$/i.test(token)) {
       return Response.json(
@@ -70,17 +77,20 @@ export async function onRequestPost({ request, env }) {
       `).bind(record.user_id, record.id, consumedAt)
     ]);
 
-    if (!results[0]?.meta?.changes) {
+    if (!results[0]?.meta?.changes || !results[1]?.meta?.changes) {
       return Response.json(
         { error: "Verification link already used or expired." },
-        { status: 400 }
+        { status: 400, headers: { "Cache-Control": "no-store" } }
       );
     }
 
-    return Response.json({
-      ok: true,
-      message: "Email verified successfully."
-    });
+    return Response.json(
+      {
+        ok: true,
+        message: "Email verified successfully."
+      },
+      { headers: { "Cache-Control": "no-store" } }
+    );
 
   } catch (error) {
     return Response.json(
