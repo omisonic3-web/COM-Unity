@@ -57,7 +57,7 @@ function HelpOffers({ userId }: { userId: string }) {
         headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status })
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Actualizarea a eșuat.");
+      if (!response.ok) throw new Error(data.diagnostic ? `${data.error || "Actualizarea a eșuat."} Detalii tehnice: ${data.diagnostic}` : data.error || "Actualizarea a eșuat.");
       await load();
     } catch (e) { setError(e instanceof Error ? e.message : "Eroare."); }
   }
