@@ -10,7 +10,7 @@ import AboutUs from './AboutUs';
 import {
   Globe2, LayoutDashboard, HandHeart, HeartHandshake, FolderKanban,
   MessageCircle, UserRound, LogOut, ArrowUpRight, Compass,
-  ShieldCheck, Clock3, ChevronRight, Bell, Pencil, Save, Link2, Info
+  ShieldCheck, Clock3, ChevronRight, Bell, Pencil, Save, Link2, Info, House, Palette
 } from 'lucide-react';
 
 type DashboardUser = {
@@ -53,6 +53,17 @@ const sectionCopy: Record<Section, { title: string; description: string }> = {
   admin: { title: 'Panou de administrare', description: 'Administrarea centralizată a platformei COM-Unity.' }
 };
 
+type InterfaceTheme = 'ocean' | 'emerald' | 'violet' | 'rose' | 'amber' | 'light';
+
+const interfaceThemes: { id: InterfaceTheme; label: string; description: string }[] = [
+  { id: 'ocean', label: 'Ocean', description: 'Albastru și cyan' },
+  { id: 'emerald', label: 'Emerald', description: 'Verde și turcoaz' },
+  { id: 'violet', label: 'Violet', description: 'Mov și lavandă' },
+  { id: 'rose', label: 'Rose', description: 'Roz și coral' },
+  { id: 'amber', label: 'Amber', description: 'Auriu și portocaliu' },
+  { id: 'light', label: 'Light', description: 'Interfață luminoasă' }
+];
+
 type ActivityNotification = {
   id: string; title: string; message: string; actor_name: string;
   entity_type: string | null; entity_id: string | null; read_at: string | null; created_at: string;
@@ -60,6 +71,10 @@ type ActivityNotification = {
 
 function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
   const [activeSection, setActiveSection] = useState<Section>('overview');
+  const [theme, setTheme] = useState<InterfaceTheme>(() => {
+    const saved = localStorage.getItem('com-unity-theme');
+    return interfaceThemes.some(item => item.id === saved) ? saved as InterfaceTheme : 'ocean';
+  });
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileName, setProfileName] = useState(user.displayName);
   const [profileSaving, setProfileSaving] = useState(false);
@@ -188,10 +203,12 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
     }
   }
 
+  useEffect(() => { localStorage.setItem('com-unity-theme', theme); }, [theme]);
+
   const activeCopy = sectionCopy[activeSection];
 
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout" data-theme={theme}>
       <aside className="dashboard-sidebar">
         <a className="brand dashboard-brand" href="/" aria-label="COM-Unity">
           <span className="brand-icon"><Globe2 /></span>
@@ -256,6 +273,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
       <main className="dashboard-main">
         <header className="dashboard-topbar">
           <div className="dashboard-breadcrumb"><span>COM-Unity</span><ChevronRight size={14} /><strong>{activeCopy.title}</strong></div>
+          <button type="button" className="dashboard-home-button" onClick={() => { setActiveSection('overview'); setEditingProfile(false); }} aria-label="Înapoi la pagina principală"><House size={16} /><span>Pagina principală</span></button>
           <div className="dashboard-account">
             <div style={{ position: "relative" }}>
               <button type="button" aria-label={activityUnreadCount ? `${activityUnreadCount} notificări necitite` : "Notificări"} aria-expanded={notificationsOpen} onClick={() => { setNotificationsOpen(open => !open); void refreshNotifications(false); }} style={{ position: "relative", border: 0, background: "transparent", color: "inherit", cursor: "pointer", padding: 8 }}>
@@ -320,7 +338,19 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
                     <div className="profile-avatar">{user.displayName.trim().charAt(0).toUpperCase() || 'U'}</div>
                     <div><strong>{user.displayName}</strong><span>{user.email}</span></div>
                   </div>
-                  <div className="profile-status"><span className="status-dot" /> Cont activ și email confirmat</div>
+                  <div className="profile-theme-settings">
+                <div className="profile-theme-heading"><span className="profile-theme-icon"><Palette size={18}/></span><div><strong>Temă interfață</strong><p>Alege aspectul platformei. Preferința se păstrează pe acest dispozitiv.</p></div></div>
+                <div className="profile-theme-grid">
+                  {interfaceThemes.map(option => (
+                    <button key={option.id} type="button" className={`profile-theme-option ${theme === option.id ? 'selected' : ''}`} onClick={() => setTheme(option.id)} aria-pressed={theme === option.id}>
+                      <span className={`theme-preview theme-preview-${option.id}`}><i/><i/><i/></span>
+                      <span className="profile-theme-option-copy"><strong>{option.label}</strong><small>{option.description}</small></span>
+                      {theme === option.id && <span className="theme-selected-mark">Activă</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="profile-status"><span className="status-dot" /> Cont activ și email confirmat</div>
                   <button className="text-link" onClick={() => setActiveSection('profile')}>Vezi profilul <ArrowUpRight size={15} /></button>
                 </section>
               </div>
