@@ -34,7 +34,7 @@ async function verifyPassword(password, storedHash) {
   if (
     !Number.isInteger(iterations) ||
     iterations < 100000 ||
-    iterations > 1000000
+    iterations > 100000
   ) {
     return false;
   }
