@@ -973,3 +973,7 @@ footer .brand {
 .message-compose textarea:focus{outline:1px solid #62dff3}
 .message-compose .button{min-height:43px}
 @media(max-width:700px){.messages-layout{grid-template-columns:1fr}.messages-people{max-height:220px}.messages-thread{min-height:420px}.message-compose{align-items:stretch;flex-direction:column}.message-compose .button{align-self:flex-end}}
+
+
+/* Unread message indicators */
+.message-unread-badge{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 6px;margin-left:auto;border-radius:999px;background:#e45d78;color:#fff;font-size:10px;font-weight:800;line-height:1;box-shadow:0 0 14px #e45d7855}
