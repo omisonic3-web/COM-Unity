@@ -1470,3 +1470,23 @@ footer .brand {
 
 /* Raportare și moderare */
 .reports-module{display:grid;gap:18px}.reports-target-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.report-item{padding:16px 0;border-top:1px solid var(--border-color,#34445c)}.report-item-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.report-item p{margin:9px 0;color:var(--text-secondary,#b8c5d8)}.report-item small{display:block;margin-top:6px;color:var(--text-muted,#8fa2bb)}.report-status{font-size:11px;font-weight:700;padding:5px 9px;border-radius:20px;background:#34445c;color:#dce8ff;white-space:nowrap}.status-pending{background:#684b1d;color:#ffe0a1}.status-reviewing{background:#244d70;color:#b8e2ff}.status-resolved{background:#20543d;color:#b9f3cf}.status-dismissed{background:#56303a;color:#ffc4cc}.report-moderation-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.report-moderation-actions .button{font-size:12px;padding:8px 11px}@media(max-width:640px){.reports-target-row{grid-template-columns:1fr}.report-item-heading{align-items:flex-start;flex-direction:column}}
+
+
+/* Insigne de implicare și reputație */
+.profile-badges{display:grid;gap:13px;margin:14px 0 20px;padding:16px;border:1px solid var(--border-color,rgba(148,163,184,.25));border-radius:15px;background:var(--panel-secondary,rgba(148,163,184,.06))}
+.profile-badges-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.profile-badges-heading>div{display:grid;gap:4px}
+.profile-badges-heading strong{font-size:14px}
+.profile-badges-heading span,.profile-badges-heading small{font-size:12px;color:var(--theme-muted,#9ca3af)}
+.profile-badges-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}
+.profile-badge-card{display:grid;justify-items:start;align-content:start;gap:6px;min-height:148px;padding:12px;border:1px solid var(--border-color,rgba(148,163,184,.2));border-radius:12px;background:var(--theme-surface,rgba(148,163,184,.04))}
+.profile-badge-card.locked{opacity:.55;filter:saturate(.45)}
+.profile-badge-icon{font-size:26px;line-height:1.2}
+.profile-badge-card>strong{font-size:12px}
+.profile-badge-card>small{font-size:11px;line-height:1.4;color:var(--theme-muted,#9ca3af)}
+.profile-badge-status{margin-top:auto;padding-top:5px;font-size:10px;font-weight:750;color:var(--theme-accent,#48c9e8)}
+.profile-badge-card.locked .profile-badge-status{color:var(--theme-muted,#9ca3af)}
+.dashboard-layout[data-theme="light"] .profile-badges{background:#f7f9fd;border-color:#d7dfed}
+.dashboard-layout[data-theme="light"] .profile-badge-card{background:#fff;border-color:#d7dfed}
+.dashboard-layout[data-theme="light"] .profile-badges-heading span,.dashboard-layout[data-theme="light"] .profile-badges-heading small,.dashboard-layout[data-theme="light"] .profile-badge-card>small{color:#52617a}
+@media(max-width:520px){.profile-badges{padding:12px}.profile-badges-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-badge-card{min-height:155px;padding:10px}}
