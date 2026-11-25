@@ -4,6 +4,7 @@ import HelpRequests from './HelpRequests';
 import HelpOffers from './HelpOffers';
 import Projects from './Projects';
 import Messages from './Messages';
+import AdminPanel from './AdminPanel';
 import {
   Globe2, LayoutDashboard, HandHeart, HeartHandshake, FolderKanban,
   MessageCircle, UserRound, LogOut, ArrowUpRight, Compass,
@@ -24,7 +25,7 @@ type Props = {
   onProfileUpdated: (displayName: string) => void;
 };
 
-type Section = 'overview' | 'requests' | 'offers' | 'projects' | 'messages' | 'profile';
+type Section = 'overview' | 'requests' | 'offers' | 'projects' | 'messages' | 'profile' | 'admin';
 
 const navigation: { id: Section; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Prezentare generală', icon: LayoutDashboard },
@@ -32,7 +33,8 @@ const navigation: { id: Section; label: string; icon: typeof LayoutDashboard }[]
   { id: 'offers', label: 'Oferte de ajutor', icon: HeartHandshake },
   { id: 'projects', label: 'Proiecte', icon: FolderKanban },
   { id: 'messages', label: 'Mesaje', icon: MessageCircle },
-  { id: 'profile', label: 'Profilul meu', icon: UserRound }
+  { id: 'profile', label: 'Profilul meu', icon: UserRound },
+  { id: 'admin', label: 'Administrator', icon: ShieldCheck }
 ];
 
 const sectionCopy: Record<Section, { title: string; description: string }> = {
@@ -41,7 +43,8 @@ const sectionCopy: Record<Section, { title: string; description: string }> = {
   offers: { title: 'Oferte de ajutor', description: 'Împărtășește timpul, experiența și resursele tale.' },
   projects: { title: 'Proiecte comunitare', description: 'Idei care aduc oamenii împreună și produc schimbări reale.' },
   messages: { title: 'Mesaje', description: 'Comunicarea cu membrii comunității.' },
-  profile: { title: 'Profilul meu', description: 'Informațiile contului tău COM-Unity.' }
+  profile: { title: 'Profilul meu', description: 'Informațiile contului tău COM-Unity.' },
+  admin: { title: 'Panou de administrare', description: 'Administrarea centralizată a platformei COM-Unity.' }
 };
 
 type ActivityNotification = {
@@ -190,7 +193,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
         </a>
         <div className="sidebar-label">SPAȚIUL MEU</div>
         <nav className="dashboard-nav" aria-label="Navigare dashboard">
-          {navigation.map(item => {
+          {navigation.filter(item => item.id !== 'admin' || user.role === 'admin').map(item => {
             const Icon = item.icon;
             return (
               <button
@@ -326,7 +329,9 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
 
           {activeSection === 'messages' && <Messages userId={user.id} onRead={handleMessagesRead} />}
 
-          {activeSection !== 'overview' && activeSection !== 'profile' && activeSection !== 'requests' && activeSection !== 'offers' && activeSection !== 'projects' && activeSection !== 'messages' && (
+          {activeSection === 'admin' && user.role === 'admin' && <AdminPanel />}
+
+          {activeSection !== 'overview' && activeSection !== 'profile' && activeSection !== 'requests' && activeSection !== 'offers' && activeSection !== 'projects' && activeSection !== 'messages' && activeSection !== 'admin' && (
             <section className="dashboard-panel module-placeholder">
               <div className="empty-icon"><Clock3 size={25} /></div>
               <span className="module-kicker">MODUL ÎN DEZVOLTARE</span>
