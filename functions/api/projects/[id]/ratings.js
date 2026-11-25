@@ -2,7 +2,7 @@ import { requireUser, json, validOrigin } from "../../_utils/session.js";
 
 function projectId(request) {
   const parts = new URL(request.url).pathname.split("/").filter(Boolean);
-  return decodeURIComponent(parts.at(-1) || "");
+  return decodeURIComponent(parts.at(-2) || "");
 }
 
 async function ensureRatingsTable(env) {
