@@ -7,7 +7,7 @@ import Messages from './Messages';
 import {
   Globe2, LayoutDashboard, HandHeart, HeartHandshake, FolderKanban,
   MessageCircle, UserRound, LogOut, ArrowUpRight, Compass,
-  ShieldCheck, Clock3, ChevronRight, Bell
+  ShieldCheck, Clock3, ChevronRight, Bell, Pencil, Save, X
 } from 'lucide-react';
 
 type DashboardUser = {
@@ -21,6 +21,7 @@ type Props = {
   user: DashboardUser;
   onLogout: () => void;
   loading: boolean;
+  onProfileUpdated: (displayName: string) => void;
 };
 
 type Section = 'overview' | 'requests' | 'offers' | 'projects' | 'messages' | 'profile';
@@ -48,8 +49,13 @@ type ActivityNotification = {
   entity_type: string | null; entity_id: string | null; read_at: string | null; created_at: string;
 };
 
-function Dashboard({ user, onLogout, loading }: Props) {
+function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
   const [activeSection, setActiveSection] = useState<Section>('overview');
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileName, setProfileName] = useState(user.displayName);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
   const [messageNotice, setMessageNotice] = useState<{ sender: string; message: string } | null>(null);
   const [activityUnreadCount, setActivityUnreadCount] = useState(0);
@@ -143,6 +149,36 @@ function Dashboard({ user, onLogout, loading }: Props) {
     document.addEventListener('visibilitychange', onVisible);
     return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisible); if (noticeTimer.current) clearTimeout(noticeTimer.current); if (activityNoticeTimer.current) clearTimeout(activityNoticeTimer.current); };
   }, [refreshUnread, refreshNotifications]);
+  async function saveProfile(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const displayName = profileName.trim();
+    if (displayName.length < 2 || displayName.length > 80) {
+      setProfileError('Numele trebuie să aibă între 2 și 80 de caractere.');
+      return;
+    }
+    setProfileSaving(true);
+    setProfileError('');
+    setProfileSuccess('');
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Profilul nu a putut fi actualizat.');
+      onProfileUpdated(data.user.displayName);
+      setProfileName(data.user.displayName);
+      setEditingProfile(false);
+      setProfileSuccess('Numele a fost actualizat.');
+    } catch (error) {
+      setProfileError(error instanceof Error ? error.message : 'A apărut o eroare.');
+    } finally {
+      setProfileSaving(false);
+    }
+  }
+
   const activeCopy = sectionCopy[activeSection];
 
   return (
@@ -303,7 +339,22 @@ function Dashboard({ user, onLogout, loading }: Props) {
           {activeSection === 'profile' && (
             <section className="dashboard-panel profile-details">
               <div className="profile-detail-avatar">{user.displayName.trim().charAt(0).toUpperCase() || 'U'}</div>
-              <div className="profile-detail-row"><span>Nume afișat</span><strong>{user.displayName}</strong></div>
+              {profileSuccess && <div className="requests-alert success" role="status">{profileSuccess}</div>}
+              {profileError && <div className="requests-alert error" role="alert">{profileError}</div>}
+              {editingProfile ? (
+                <form onSubmit={saveProfile} className="request-form" style={{ width: '100%', maxWidth: 520 }}>
+                  <label>Nume afișat
+                    <input value={profileName} onChange={event => setProfileName(event.target.value)} minLength={2} maxLength={80} autoComplete="name" required />
+                  </label>
+                  <div className="request-form-footer">
+                    <button type="button" className="button button-outline" onClick={() => { setProfileName(user.displayName); setEditingProfile(false); setProfileError(''); }} disabled={profileSaving}>Anulează</button>
+                    <button type="submit" className="button button-primary" disabled={profileSaving || profileName.trim() === user.displayName}>{profileSaving ? 'Se salvează...' : <><Save size={16} /> Salvează</>}</button>
+                  </div>
+                </form>
+              ) : <>
+                <div className="profile-detail-row"><span>Nume afișat</span><strong>{user.displayName}</strong></div>
+                <button type="button" className="button button-outline" onClick={() => { setProfileName(user.displayName); setEditingProfile(true); setProfileError(''); setProfileSuccess(''); }}><Pencil size={16} /> Modifică numele</button>
+              </>}
               <div className="profile-detail-row"><span>Adresă de email</span><strong>{user.email}</strong></div>
               <div className="profile-detail-row"><span>Rol în platformă</span><strong>{user.role === 'admin' ? 'Administrator' : user.role === 'moderator' ? 'Moderator' : 'Membru'}</strong></div>
               <div className="profile-status"><span className="status-dot" /> Cont activ și email confirmat</div>
