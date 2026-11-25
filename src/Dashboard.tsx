@@ -114,7 +114,7 @@ function Dashboard({ user, onLogout, loading }: Props) {
       } catch { /* se sincronizează la următoarea încărcare */ }
     }
     setNotificationsOpen(false);
-    setActiveSection(notification.entity_type === 'project' ? 'projects' : 'overview');
+    setActiveSection(notification.entity_type === 'project' ? 'projects' : notification.entity_type === 'request' ? 'requests' : 'overview');
     await refreshNotifications(false);
   }, [refreshNotifications]);
   const openActivityNotice = useCallback(async () => {
@@ -129,7 +129,7 @@ function Dashboard({ user, onLogout, loading }: Props) {
     } catch { /* starea se va sincroniza la următoarea verificare */ }
     setActivityUnreadCount(count => Math.max(0, count - 1));
     await refreshNotifications(false);
-    setActiveSection(activityNotice.entityType === 'project' ? 'projects' : 'overview');
+    setActiveSection(activityNotice.entityType === 'project' ? 'projects' : activityNotice.entityType === 'request' ? 'requests' : 'overview');
     setActivityNotice(null);
   }, [activityNotice, refreshNotifications]);
   useEffect(() => {
