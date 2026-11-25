@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { Plus, RefreshCw, MapPin, CalendarDays, Trash2, CheckCircle2, Circle, X } from "lucide-react";
+import { Plus, RefreshCw, MapPin, CalendarDays, Trash2, CheckCircle2, Circle, X, Send } from "lucide-react";
 
 type HelpRequest = {
   id: string; user_id: string; title: string; description: string; category: string;
@@ -173,13 +173,21 @@ function HelpRequests({ userId }: { userId: string }) {
           {item.user_id === userId && <><button onClick={() => void toggleResponses(item)}>Vezi conversația</button><button onClick={() => void updateStatus(item)}>{item.status === "open" ? <><CheckCircle2 size={15}/> Marchează rezolvată</> : <><Circle size={15}/> Redeschide</>}</button><button className="danger" onClick={() => void deleteRequest(item)}><Trash2 size={15}/> Șterge</button></>}
         </div>
         {expandedRequest === item.id && <div className="request-responses">
-          <h3>Răspunsuri și mesaje</h3>
-          {(responses[item.id] || []).length === 0 ? <p>Nu există răspunsuri încă.</p> : (responses[item.id] || []).map(reply => <div className="request-response" key={reply.id}><strong>{reply.author_name}</strong><p>{reply.message}</p><small>{new Date(reply.created_at).toLocaleString("ro-RO")}</small></div>)}
-          {item.status === "open" && <form onSubmit={event => void sendResponse(item, event)} className="request-response-form">
-            <label htmlFor={`response-${item.id}`}>Trimite un mesaj în conversație</label>
-            <textarea id={`response-${item.id}`} value={responseDraft} onChange={event => setResponseDraft(event.target.value)} minLength={10} maxLength={2000} rows={3} placeholder="Scrie mesajul tău..." required />
-            <button className="button button-primary" disabled={sendingResponse || responseDraft.trim().length < 10}>{sendingResponse ? "Se trimite..." : "Trimite răspunsul"}</button>
-          </form>}
+          <div className="request-conversation-heading">
+            <div><span className="request-conversation-kicker">CONVERSAȚIE</span><h3>Mesaje despre această cerere</h3></div>
+            <span className="request-message-count">{(responses[item.id] || []).length} mesaje</span>
+          </div>
+          <div className="request-chat-history" aria-live="polite">
+            {(responses[item.id] || []).length === 0 ? <div className="request-chat-empty"><span>👋</span><strong>Începe conversația</strong><p>Scrie un mesaj pentru a lua legătura cu autorul cererii.</p></div> : (responses[item.id] || []).map(reply => <div className={`request-chat-row ${reply.user_id === userId ? "mine" : "theirs"}`} key={reply.id}>
+              <div className="request-chat-avatar">{reply.author_name.trim().charAt(0).toUpperCase()}</div>
+              <div className="request-chat-bubble"><div className="request-chat-author">{reply.user_id === userId ? "Tu" : reply.author_name}</div><p>{reply.message}</p><time>{new Date(reply.created_at).toLocaleString("ro-RO", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</time></div>
+            </div>)}
+          </div>
+          {item.status === "open" ? <form onSubmit={event => void sendResponse(item, event)} className="request-chat-composer">
+            <label className="sr-only" htmlFor={`response-${item.id}`}>Scrie un mesaj</label>
+            <textarea id={`response-${item.id}`} value={responseDraft} onChange={event => setResponseDraft(event.target.value)} minLength={10} maxLength={2000} rows={1} placeholder="Scrie un mesaj..." required />
+            <div className="request-chat-composer-footer"><span>{responseDraft.length}/2000</span><button type="submit" aria-label="Trimite mesajul" title="Trimite mesajul" disabled={sendingResponse || responseDraft.trim().length < 10}><Send size={17}/><span>{sendingResponse ? "Se trimite..." : "Trimite"}</span></button></div>
+          </form> : <p className="request-chat-closed">Această cerere este închisă. Conversația poate fi consultată, dar nu mai poți trimite mesaje.</p>}
         </div>}
       </article>)}</div>
     }
