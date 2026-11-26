@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState, type FormEvent } from 'react';
-import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, ScrollText, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2, Info, Save, Activity } from 'lucide-react';
+import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, ScrollText, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2, Info, Save, Activity, Flag } from 'lucide-react';
 
 type Member = { id: string; display_name: string; email: string; role: string; verified: number; registered_at?: string | null };
 type MemberActivityItem = { activity_type: string; title: string; status: string; created_at: string };
@@ -10,6 +10,7 @@ type Zone = { id: string; name: string; active: number };
 type UsefulLink = { id: string; title: string; url: string; description: string; active: number };
 type AboutContent = { title: string; intro: string; mission: string; vision: string; values_text: string; contact_email: string; contact_location: string };
 type AuditLog = { id: string; action: string; adminId: string | null; details: string; createdAt: string };
+type Report = { id: string; category: string; reason: string; details: string; target_type: string | null; target_id: string | null; status: string; created_at: string; updated_at: string; reporter_name: string };
 
 type AuditDetails = { type?: string; itemId?: string; reportId?: string; active?: boolean; status?: string; fields?: string[] };
 
@@ -56,7 +57,7 @@ function formatMemberActivityStatus(status: string) {
 function AdminPanel() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);\n  const [reports, setReports] = useState<Report[]>([]);\n  const [reportFilter, setReportFilter] = useState('open');\n  const [updatingReportId, setUpdatingReportId] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [links, setLinks] = useState<UsefulLink[]>([]);
@@ -82,26 +83,26 @@ function AdminPanel() {
   async function load() {
     setLoading(true); setError('');
     try {
-      const [overviewResponse, catalogResponse, linksResponse, aboutResponse, auditResponse] = await Promise.all([
+      const [overviewResponse, catalogResponse, linksResponse, aboutResponse, auditResponse, reportsResponse] = await Promise.all([
         fetch('/api/admin', { credentials: 'same-origin', cache: 'no-store' }),
         fetch('/api/admin/catalog', { credentials: 'same-origin', cache: 'no-store' }),
         fetch('/api/admin/links', { credentials: 'same-origin', cache: 'no-store' }),
         fetch('/api/admin/about', { credentials: 'same-origin', cache: 'no-store' }),
-        fetch('/api/admin/audit?limit=50', { credentials: 'same-origin', cache: 'no-store' })
+        fetch('/api/admin/audit?limit=50', { credentials: 'same-origin', cache: 'no-store' }),\n        fetch('/api/reports', { credentials: 'same-origin', cache: 'no-store' })
       ]);
       const overview = await overviewResponse.json().catch(() => ({}));
       const catalog = await catalogResponse.json().catch(() => ({}));
       const linkData = await linksResponse.json().catch(() => ({}));
       const aboutData = await aboutResponse.json().catch(() => ({}));
-      const auditData = await auditResponse.json().catch(() => ({}));
+      const auditData = await auditResponse.json().catch(() => ({}));\n      const reportsData = await reportsResponse.json().catch(() => ({}));
       if (!overviewResponse.ok) throw new Error(overview.error || 'Datele nu au putut fi încărcate.');
       if (!catalogResponse.ok) throw new Error(catalog.error || 'Temele și zonele nu au putut fi încărcate.');
       if (!linksResponse.ok) throw new Error(linkData.error || 'Linkurile utile nu au putut fi încărcate.');
       if (!aboutResponse.ok) throw new Error(aboutData.error || 'Prezentarea Despre noi nu a putut fi încărcată.');
-      if (!auditResponse.ok) throw new Error(auditData.error || 'Jurnalul de activitate nu a putut fi încărcat.');
+      if (!auditResponse.ok) throw new Error(auditData.error || 'Jurnalul de activitate nu a putut fi încărcat.');\n      if (!reportsResponse.ok) throw new Error(reportsData.error || 'Sesizările nu au putut fi încărcate.');
       setStats(overview.stats);
       setMembers(overview.members || []);
-      setAuditLogs(auditData.logs || []);
+      setAuditLogs(auditData.logs || []);\n      setReports(reportsData.reports || []);
       setCategories(catalog.categories || []);
       setZones(catalog.zones || []);
       setLinks(linkData.links || []);
@@ -242,6 +243,25 @@ function AdminPanel() {
     } finally {
       setMemberActivityLoading(null);
     }
+  }
+
+  async function updateReportStatus(report: Report, status: 'reviewing' | 'resolved' | 'dismissed') {
+    setUpdatingReportId(report.id);
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch('/api/reports', {
+        method: 'PATCH', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: report.id, status })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Starea sesizării nu a putut fi actualizată.');
+      setSuccess('Starea sesizării a fost actualizată.');
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'A apărut o eroare.');
+    } finally { setUpdatingReportId(null); }
   }
 
   function exportMembersCsv() {
@@ -399,6 +419,37 @@ function AdminPanel() {
             ))}
           </tbody></table></div>
         )}
+      </section>
+
+      <section className="dashboard-panel admin-catalog">
+        <div className="panel-heading"><div><h2><Flag size={18} /> Moderare sesizări</h2><p>Verifică sesizările comunității și actualizează starea acestora. Modificările sunt înregistrate în jurnal.</p></div></div>
+        <div className="admin-catalog-form">
+          <select value={reportFilter} onChange={event => setReportFilter(event.target.value)} aria-label="Filtrează sesizările">
+            <option value="open">În așteptare și în analiză</option><option value="pending">Doar în așteptare</option>
+            <option value="reviewing">Doar în analiză</option><option value="resolved">Rezolvate</option>
+            <option value="dismissed">Respinse</option><option value="all">Toate sesizările</option>
+          </select>
+        </div>
+        {reports.filter(report => reportFilter === 'all' || (reportFilter === 'open' ? ['pending', 'reviewing'].includes(report.status) : report.status === reportFilter)).length === 0
+          ? <p className="admin-muted">Nu există sesizări pentru filtrul selectat.</p>
+          : <div className="admin-catalog-list">
+            {reports.filter(report => reportFilter === 'all' || (reportFilter === 'open' ? ['pending', 'reviewing'].includes(report.status) : report.status === reportFilter)).map(report => (
+              <article className="admin-catalog-item" key={report.id}>
+                <div>
+                  <strong>{report.reason}</strong>
+                  <small>{({ harassment: 'Hărțuire', spam: 'Spam', fraud: 'Fraudă', inappropriate: 'Conținut nepotrivit', fake: 'Informații false', other: 'Altele' } as Record<string, string>)[report.category] || report.category} · {report.reporter_name || 'Membru'} · {report.created_at && !Number.isNaN(new Date(report.created_at).getTime()) ? new Date(report.created_at).toLocaleString('ro-RO') : '—'}</small>
+                  {report.details && <p>{report.details}</p>}
+                  {report.target_type && <small>Element raportat: {report.target_type}{report.target_id ? ' · ' + report.target_id.slice(0, 8) : ''}</small>}
+                  <small>Stare: {({ pending: 'În așteptare', reviewing: 'În analiză', resolved: 'Rezolvată', dismissed: 'Respinsă' } as Record<string, string>)[report.status] || report.status}</small>
+                </div>
+                <div className="admin-link-actions">
+                  <button type="button" className="admin-catalog-toggle" disabled={updatingReportId === report.id || report.status === 'reviewing'} onClick={() => void updateReportStatus(report, 'reviewing')}>În analiză</button>
+                  <button type="button" className="admin-catalog-toggle" disabled={updatingReportId === report.id || report.status === 'resolved'} onClick={() => void updateReportStatus(report, 'resolved')}>Rezolvată</button>
+                  <button type="button" className="admin-catalog-toggle" disabled={updatingReportId === report.id || report.status === 'dismissed'} onClick={() => void updateReportStatus(report, 'dismissed')}>Respinsă</button>
+                </div>
+              </article>
+            ))}
+          </div>}
       </section>
 
       <section className="dashboard-panel admin-catalog">
