@@ -1,4 +1,4 @@
-import { validOrigin } from "../_utils/session.js";
+import { validOrigin, hasJsonContentType } from "../_utils/session.js";
 const ITERATIONS = 100000;
 function base64(bytes) { let value = ""; for (const b of bytes) value += String.fromCharCode(b); return btoa(value); }
 function hex(bytes) { return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join(""); }
@@ -13,7 +13,7 @@ export async function onRequestPost({ request, env }) {
   if (!validOrigin(request)) return Response.json({ error: "Originea cererii nu este permisă." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   if (!env.DB) return Response.json({ error: "Serviciul nu este disponibil." }, { status: 503, headers: { "Cache-Control": "no-store" } });
   try {
-    if (!request.headers.get("content-type")?.includes("application/json")) return Response.json({ error: "Content-Type must be application/json" }, { status: 415, headers: { "Cache-Control": "no-store" } });
+    if (!hasJsonContentType(request)) return Response.json({ error: "Content-Type must be application/json" }, { status: 415, headers: { "Cache-Control": "no-store" } });
     const body = await request.json();
     const token = String(body.token || "");
     const password = String(body.password || "");
