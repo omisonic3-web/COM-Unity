@@ -1,4 +1,4 @@
-import { requireUser, validOrigin } from "../_utils/session.js";
+import { requireUser, validOrigin, hasJsonContentType } from "../_utils/session.js";
 
 const COOKIE_NAME = "__Host-comunity_session";
 
@@ -36,7 +36,7 @@ export async function onRequestPost({ request, env }) {
 
   if (!env.DB) return Response.json({ error: "Serviciul nu este disponibil." }, { status: 503, headers });
   if (!validOrigin(request)) return Response.json({ error: "Solicitare nepermisă." }, { status: 403, headers });
-  if (!request.headers.get("content-type")?.includes("application/json")) {
+  if (!hasJsonContentType(request)) {
     return Response.json({ error: "Content-Type trebuie să fie application/json." }, { status: 415, headers });
   }
 
