@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, ScrollText, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2, Info, Save } from 'lucide-react';
 
 type Member = { id: string; display_name: string; email: string; role: string; verified: number; registered_at?: string | null };
+type MemberActivityItem = { activity_type: string; title: string; status: string; created_at: string };
+type MemberActivity = { activity: MemberActivityItem[]; limited: boolean };
 type Stats = { users: number; requests: number; offers: number; projects: number };
 type Category = { id: string; name: string; kind: 'both' | 'request' | 'offer'; active: number };
 type Zone = { id: string; name: string; active: number };
@@ -62,6 +64,10 @@ function AdminPanel() {
   const [zoneName, setZoneName] = useState('');
   const [memberSearch, setMemberSearch] = useState('');
   const [memberRoleFilter, setMemberRoleFilter] = useState('all');
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
+  const [memberActivities, setMemberActivities] = useState<Record<string, MemberActivity>>({});
+  const [memberActivityLoading, setMemberActivityLoading] = useState<string | null>(null);
+  const [memberActivityError, setMemberActivityError] = useState('');
 
   async function load() {
     setLoading(true); setError('');
@@ -203,6 +209,31 @@ function AdminPanel() {
     } catch (err) { setError(err instanceof Error ? err.message : 'A apărut o eroare.'); }
   }
 
+  async function toggleMemberActivity(memberId: string) {
+    if (expandedMemberId === memberId) {
+      setExpandedMemberId(null);
+      setMemberActivityError('');
+      return;
+    }
+    setExpandedMemberId(memberId);
+    setMemberActivityError('');
+    if (memberActivities[memberId]) return;
+    setMemberActivityLoading(memberId);
+    try {
+      const response = await fetch(`/api/admin/members/${encodeURIComponent(memberId)}`, {
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Activitatea nu a putut fi încărcată.');
+      setMemberActivities(current => ({ ...current, [memberId]: { activity: data.activity || [], limited: Boolean(data.limited) } }));
+    } catch (err) {
+      setMemberActivityError(err instanceof Error ? err.message : 'A apărut o eroare.');
+    } finally {
+      setMemberActivityLoading(null);
+    }
+  }
+
   const normalizedMemberSearch = memberSearch.trim().toLocaleLowerCase('ro-RO');
   const filteredMembers = members.filter(member => {
     const matchesSearch = !normalizedMemberSearch || `${member.display_name} ${member.email}`.toLocaleLowerCase('ro-RO').includes(normalizedMemberSearch);
@@ -299,8 +330,29 @@ function AdminPanel() {
         </div>
         <p className="admin-muted">Afișați: {filteredMembers.length} din {members.length} conturi încărcate.</p>
         {loading ? <p className="admin-muted">Se încarcă membrii...</p> : members.length === 0 ? <p className="admin-muted">Nu există membri de afișat.</p> : filteredMembers.length === 0 ? <p className="admin-muted">Nu există conturi care să corespundă căutării și filtrului selectat.</p> : (
-          <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Nume</th><th>Email</th><th>Rol</th><th>Cont</th><th>Înregistrat</th></tr></thead><tbody>
-            {filteredMembers.map(member => <tr key={member.id}><td>{member.display_name}</td><td>{member.email}</td><td><span className={`admin-role ${member.role === 'admin' ? 'is-admin' : ''}`}>{member.role === 'admin' ? 'Administrator' : member.role === 'moderator' ? 'Moderator' : 'Membru'}</span></td><td>{member.verified ? 'Confirmat' : 'Neconfirmat'}</td><td>{member.registered_at ? new Date(member.registered_at).toLocaleDateString('ro-RO') : '—'}</td></tr>)}
+          <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Nume</th><th>Email</th><th>Rol</th><th>Cont</th><th>Înregistrat</th><th>Detalii</th></tr></thead><tbody>
+            {filteredMembers.map(member => (
+              <>
+                <tr key={member.id}>
+                  <td>{member.display_name}</td><td>{member.email}</td>
+                  <td><span className={`admin-role ${member.role === 'admin' ? 'is-admin' : ''}`}>{member.role === 'admin' ? 'Administrator' : member.role === 'moderator' ? 'Moderator' : 'Membru'}</span></td>
+                  <td>{member.verified ? 'Confirmat' : 'Neconfirmat'}</td>
+                  <td>{member.registered_at ? new Date(member.registered_at).toLocaleDateString('ro-RO') : '—'}</td>
+                  <td><button type="button" className="button button-outline" onClick={() => void toggleMemberActivity(member.id)}>{expandedMemberId === member.id ? 'Închide' : 'Activitate'}</button></td>
+                </tr>
+                {expandedMemberId === member.id && (
+                  <tr key={member.id + '-activity'}><td colSpan={6}>
+                    <div className="admin-muted">
+                      <strong>Activitate publică: {member.display_name}</strong>
+                      {memberActivityLoading === member.id ? <p>Se încarcă activitatea...</p> : memberActivityError ? <p role="alert">{memberActivityError}</p> : !memberActivities[member.id] ? <p>Activitatea nu este încărcată.</p> : memberActivities[member.id].activity.length === 0 ? <p>Nu există cereri, oferte sau proiecte publicate de acest membru.</p> : (
+                        <ul>{memberActivities[member.id].activity.map((item, index) => <li key={item.activity_type + item.created_at + index}>{item.activity_type}: <strong>{item.title}</strong> · {item.status} · {item.created_at ? new Date(item.created_at).toLocaleString('ro-RO') : '—'}</li>)}</ul>
+                      )}
+                      {memberActivities[member.id]?.limited && <p>Sunt afișate cel mult 50 de înregistrări recente.</p>}
+                    </div>
+                  </td></tr>
+                )}
+              </>
+            ))}
           </tbody></table></div>
         )}
       </section>
