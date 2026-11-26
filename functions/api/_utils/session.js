@@ -38,3 +38,9 @@ export function validOrigin(request) {
   const origin = request.headers.get("Origin");
   return !origin || origin === new URL(request.url).origin;
 }
+
+
+export function hasJsonContentType(request) {
+  const contentType = request.headers.get("Content-Type") || "";
+  return contentType.split(";")[0].trim().toLowerCase() === "application/json";
+}
