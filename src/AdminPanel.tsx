@@ -60,6 +60,8 @@ function AdminPanel() {
   const [categoryName, setCategoryName] = useState('');
   const [categoryKind, setCategoryKind] = useState<'both' | 'request' | 'offer'>('both');
   const [zoneName, setZoneName] = useState('');
+  const [memberSearch, setMemberSearch] = useState('');
+  const [memberRoleFilter, setMemberRoleFilter] = useState('all');
 
   async function load() {
     setLoading(true); setError('');
@@ -201,6 +203,13 @@ function AdminPanel() {
     } catch (err) { setError(err instanceof Error ? err.message : 'A apărut o eroare.'); }
   }
 
+  const normalizedMemberSearch = memberSearch.trim().toLocaleLowerCase('ro-RO');
+  const filteredMembers = members.filter(member => {
+    const matchesSearch = !normalizedMemberSearch || `${member.display_name} ${member.email}`.toLocaleLowerCase('ro-RO').includes(normalizedMemberSearch);
+    const matchesRole = memberRoleFilter === 'all' || member.role === memberRoleFilter;
+    return matchesSearch && matchesRole;
+  });
+
   const cards = [
     { label: 'Membri înregistrați', value: stats?.users, icon: Users },
     { label: 'Cereri de ajutor', value: stats?.requests, icon: HandHeart },
@@ -278,10 +287,20 @@ function AdminPanel() {
       </section>
 
       <section className="dashboard-panel admin-members">
-        <div className="panel-heading"><div><h2>Membrii platformei</h2><p>Conturi înregistrate și roluri atribuite.</p></div><Users size={19} /></div>
-        {loading ? <p className="admin-muted">Se încarcă membrii...</p> : members.length === 0 ? <p className="admin-muted">Nu există membri de afișat.</p> : (
+        <div className="panel-heading"><div><h2>Membrii platformei</h2><p>Conturi înregistrate și roluri atribuite. Lista afișează maximum 200 de conturi.</p></div><Users size={19} /></div>
+        <div className="admin-catalog-form">
+          <input type="search" value={memberSearch} onChange={event => setMemberSearch(event.target.value)} placeholder="Caută după nume sau email..." aria-label="Caută membri după nume sau email" />
+          <select value={memberRoleFilter} onChange={event => setMemberRoleFilter(event.target.value)} aria-label="Filtrează membrii după rol">
+            <option value="all">Toate rolurile</option>
+            <option value="user">Membri</option>
+            <option value="moderator">Moderatori</option>
+            <option value="admin">Administratori</option>
+          </select>
+        </div>
+        <p className="admin-muted">Afișați: {filteredMembers.length} din {members.length} conturi încărcate.</p>
+        {loading ? <p className="admin-muted">Se încarcă membrii...</p> : members.length === 0 ? <p className="admin-muted">Nu există membri de afișat.</p> : filteredMembers.length === 0 ? <p className="admin-muted">Nu există conturi care să corespundă căutării și filtrului selectat.</p> : (
           <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Nume</th><th>Email</th><th>Rol</th><th>Cont</th></tr></thead><tbody>
-            {members.map(member => <tr key={member.id}><td>{member.display_name}</td><td>{member.email}</td><td><span className={`admin-role ${member.role === 'admin' ? 'is-admin' : ''}`}>{member.role === 'admin' ? 'Administrator' : member.role === 'moderator' ? 'Moderator' : 'Membru'}</span></td><td>{member.verified ? 'Confirmat' : 'Neconfirmat'}</td></tr>)}
+            {filteredMembers.map(member => <tr key={member.id}><td>{member.display_name}</td><td>{member.email}</td><td><span className={`admin-role ${member.role === 'admin' ? 'is-admin' : ''}`}>{member.role === 'admin' ? 'Administrator' : member.role === 'moderator' ? 'Moderator' : 'Membru'}</span></td><td>{member.verified ? 'Confirmat' : 'Neconfirmat'}</td></tr>)}
           </tbody></table></div>
         )}
       </section>
