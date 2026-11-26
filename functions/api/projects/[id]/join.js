@@ -1,4 +1,4 @@
-import { requireUser, json, validOrigin } from "../../_utils/session.js";
+import { requireUser, json, validOrigin, checkRateLimit, rateLimitResponse } from "../../_utils/session.js";
 
 function projectId(request) {
   const parts = new URL(request.url).pathname.split("/").filter(Boolean);
@@ -9,6 +9,8 @@ export async function onRequestPost({ request, env }) {
   if (!validOrigin(request)) return json({ error: "Solicitare nepermisă." }, 403);
   const auth = await requireUser(request, env);
   if (auth.error) return json({ error: auth.error }, auth.status);
+  const limit = await checkRateLimit(env, "project_join", auth.user.id, 10, 3600);
+  if (!limit.allowed) return rateLimitResponse(limit);
   const id = projectId(request);
   try {
     const project = await env.DB.prepare(
