@@ -1,4 +1,4 @@
-import { requireUser, json, validOrigin, hasJsonContentType } from "../_utils/session.js";
+import { requireUser, json, validOrigin, hasJsonContentType, writeAuditLog } from "../_utils/session.js";
 
 const defaults = {
   title: "Despre COM-Unity",
@@ -67,6 +67,7 @@ export async function onRequestPatch({ request, env }) {
     await ensureAbout(env);
     await env.DB.prepare(`UPDATE about_content SET title=?,intro=?,mission=?,vision=?,values_text=?,contact_email=?,contact_location=?,updated_at=CURRENT_TIMESTAMP WHERE id=1`)
       .bind(fields.title,fields.intro,fields.mission,fields.vision,fields.values_text,fields.contact_email,fields.contact_location).run();
+    await writeAuditLog(env, auth.user.id, "about.update", { fields: ["title","intro","mission","vision","values_text","contact_email","contact_location"] });
     return json({ ok: true });
   } catch (error) {
     console.error("Admin about content update failed:", error);
