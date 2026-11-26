@@ -245,7 +245,11 @@ function AdminPanel() {
   }
 
   function exportMembersCsv() {
-    const escapeCsv = (value: string) => '"' + value.replace(/"/g, '""') + '"';
+    const escapeCsv = (value: string) => {
+      // Prevent spreadsheet formula injection from user-controlled names.
+      const safeValue = /^[\\s]*[=+\\-@]/.test(value) ? "'" + value : value;
+      return '"' + safeValue.replace(/"/g, '""') + '"';
+    };
     const rows = [
       ['Nume', 'Rol', 'Cont', 'Data înregistrării'],
       ...filteredMembers.map(member => [
@@ -266,7 +270,7 @@ function AdminPanel() {
     document.body.appendChild(link);
     link.click();
     link.remove();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   const normalizedMemberSearch = memberSearch.trim().toLocaleLowerCase('ro-RO');
