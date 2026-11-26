@@ -85,3 +85,15 @@ export function rateLimitResponse(limit) {
     }
   });
 }
+
+
+export async function writeAuditLog(env, adminId, action, details = {}) {
+  try {
+    await env.DB.prepare(`INSERT INTO audit_logs (id, admin_id, action, details, created_at)
+      VALUES (?, ?, ?, ?, ?)`)
+      .bind(crypto.randomUUID(), adminId, action, JSON.stringify(details), new Date().toISOString())
+      .run();
+  } catch (error) {
+    console.error("Admin audit log write failed:", error);
+  }
+}
