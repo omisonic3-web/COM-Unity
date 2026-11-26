@@ -57,7 +57,8 @@ function formatMemberActivityStatus(status: string) {
 function AdminPanel() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);\n  const [reports, setReports] = useState<Report[]>([]);\n  const [reportFilter, setReportFilter] = useState('open');\n  const [updatingReportId, setUpdatingReportId] = useState<string | null>(null);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);\n  const [reportFilter, setReportFilter] = useState('open');\n  const [updatingReportId, setUpdatingReportId] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [links, setLinks] = useState<UsefulLink[]>([]);
@@ -88,21 +89,25 @@ function AdminPanel() {
         fetch('/api/admin/catalog', { credentials: 'same-origin', cache: 'no-store' }),
         fetch('/api/admin/links', { credentials: 'same-origin', cache: 'no-store' }),
         fetch('/api/admin/about', { credentials: 'same-origin', cache: 'no-store' }),
-        fetch('/api/admin/audit?limit=50', { credentials: 'same-origin', cache: 'no-store' }),\n        fetch('/api/reports', { credentials: 'same-origin', cache: 'no-store' })
+        fetch('/api/admin/audit?limit=50', { credentials: 'same-origin', cache: 'no-store' }),
+        fetch('/api/reports', { credentials: 'same-origin', cache: 'no-store' })
       ]);
       const overview = await overviewResponse.json().catch(() => ({}));
       const catalog = await catalogResponse.json().catch(() => ({}));
       const linkData = await linksResponse.json().catch(() => ({}));
       const aboutData = await aboutResponse.json().catch(() => ({}));
-      const auditData = await auditResponse.json().catch(() => ({}));\n      const reportsData = await reportsResponse.json().catch(() => ({}));
+      const auditData = await auditResponse.json().catch(() => ({}));
+      const reportsData = await reportsResponse.json().catch(() => ({}));
       if (!overviewResponse.ok) throw new Error(overview.error || 'Datele nu au putut fi încărcate.');
       if (!catalogResponse.ok) throw new Error(catalog.error || 'Temele și zonele nu au putut fi încărcate.');
       if (!linksResponse.ok) throw new Error(linkData.error || 'Linkurile utile nu au putut fi încărcate.');
       if (!aboutResponse.ok) throw new Error(aboutData.error || 'Prezentarea Despre noi nu a putut fi încărcată.');
-      if (!auditResponse.ok) throw new Error(auditData.error || 'Jurnalul de activitate nu a putut fi încărcat.');\n      if (!reportsResponse.ok) throw new Error(reportsData.error || 'Sesizările nu au putut fi încărcate.');
+      if (!auditResponse.ok) throw new Error(auditData.error || 'Jurnalul de activitate nu a putut fi încărcat.');
+      if (!reportsResponse.ok) throw new Error(reportsData.error || 'Sesizările nu au putut fi încărcate.');
       setStats(overview.stats);
       setMembers(overview.members || []);
-      setAuditLogs(auditData.logs || []);\n      setReports(reportsData.reports || []);
+      setAuditLogs(auditData.logs || []);
+      setReports(reportsData.reports || []);
       setCategories(catalog.categories || []);
       setZones(catalog.zones || []);
       setLinks(linkData.links || []);
