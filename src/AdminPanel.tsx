@@ -11,6 +11,22 @@ type AuditLog = { id: string; action: string; adminId: string | null; details: s
 
 type AuditDetails = { type?: string; itemId?: string; reportId?: string; active?: boolean; status?: string; fields?: string[] };
 
+function formatAuditAction(action: string) {
+  const labels: Record<string, string> = {
+    'auth.admin_login': 'Autentificare administrator',
+    'auth.admin_logout': 'Deconectare administrator',
+    'about.update': 'Actualizare prezentare',
+    'catalog.create': 'Adăugare categorie / zonă',
+    'catalog.toggle': 'Activare / dezactivare categorie / zonă',
+    'links.create': 'Adăugare link util',
+    'links.update': 'Actualizare link util',
+    'links.toggle': 'Activare / dezactivare link util',
+    'links.delete': 'Ștergere link util',
+    'moderation.report_status': 'Actualizare stare sesizare'
+  };
+  return labels[action] || action || '—';
+}
+
 function formatAuditDetails(value: string) {
   try {
     const details = JSON.parse(value) as AuditDetails;
@@ -274,7 +290,7 @@ function AdminPanel() {
         <div className="panel-heading"><div><h2><ScrollText size={18} /> Jurnal de activitate</h2><p>Ultimele 50 de evenimente administrative înregistrate.</p></div></div>
         {loading ? <p className="admin-muted">Se încarcă jurnalul...</p> : auditLogs.length === 0 ? <p className="admin-muted">Nu există încă evenimente în jurnal.</p> : (
           <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Data</th><th>Acțiune</th><th>ID administrator</th><th>Detalii</th></tr></thead><tbody>
-            {auditLogs.map(log => <tr key={log.id}><td>{log.createdAt ? new Date(log.createdAt).toLocaleString('ro-RO') : '—'}</td><td>{log.action || '—'}</td><td>{log.adminId || '—'}</td><td>{formatAuditDetails(log.details)}</td></tr>)}
+            {auditLogs.map(log => <tr key={log.id}><td>{log.createdAt ? new Date(log.createdAt).toLocaleString('ro-RO') : '—'}</td><td>{formatAuditAction(log.action)}</td><td>{log.adminId || '—'}</td><td>{formatAuditDetails(log.details)}</td></tr>)}
           </tbody></table></div>
         )}
       </section>
