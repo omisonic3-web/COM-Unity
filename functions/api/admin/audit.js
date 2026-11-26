@@ -20,13 +20,22 @@ export async function onRequestGet({ request, env }) {
     `).bind(limit).all();
 
     return json({
-      logs: (result.results || []).map(row => ({
-        id: row.id,
-        action: String(row.action || "").slice(0, 120),
-        adminId: row.admin_id,
-        details: String(row.details || "").slice(0, 1000),
-        createdAt: row.created_at
-      }))
+      logs: (result.results || []).map(row => {
+        let source = {};
+        try { source = JSON.parse(row.details || "{}"); } catch { source = {}; }
+        const details = {};
+        if (["category", "zone"].includes(source.type)) details.type = source.type;
+        if (typeof source.itemId === "string") details.itemId = source.itemId;
+        if (typeof source.active === "boolean" || source.active === 0 || source.active === 1) details.active = Boolean(source.active);
+        if (Array.isArray(source.fields)) details.fields = source.fields.filter(field => ["title","intro","mission","vision","values_text","contact_email","contact_location"].includes(field));
+        return {
+          id: row.id,
+          action: String(row.action || "").slice(0, 120),
+          adminId: row.admin_id,
+          details: JSON.stringify(details),
+          createdAt: row.created_at
+        };
+      })
     });
   } catch (error) {
     console.error("Admin audit log read failed:", error);
