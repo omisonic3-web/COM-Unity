@@ -49,7 +49,7 @@ export async function onRequestPost({ request, env }) {
   let body;
   try { body = await request.json(); } catch { return json({ error: "Date JSON invalide." }, 400); }
   const type = body.type === "zone" ? "zone" : body.type === "category" ? "category" : "";
-  const name = typeof body.name === "string" ? body.name.trim().replace(/\\s+/g, " ") : "";
+  const name = typeof body.name === "string" ? body.name.trim().replace(/\s+/g, " ") : "";
   if (!type) return json({ error: "Tip de element invalid." }, 400);
   if (name.length < 2 || name.length > 80) return json({ error: "Numele trebuie să aibă între 2 și 80 de caractere." }, 400);
   const kind = ["both","request","offer"].includes(body.kind) ? body.kind : "both";
