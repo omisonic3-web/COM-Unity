@@ -29,7 +29,9 @@ export async function onRequestGet({ request, env }) {
       ORDER BY CASE r.status WHEN 'pending' THEN 0 WHEN 'reviewing' THEN 1 ELSE 2 END, r.created_at DESC
       LIMIT 300
     ` : `
-      SELECT r.*, 'Echipa COM-Unity' AS reporter_name
+      SELECT r.id, r.reporter_id, r.category, r.reason, r.details,
+             r.target_type, r.target_id, r.status, r.created_at, r.updated_at,
+             'Echipa COM-Unity' AS reporter_name
       FROM reports r WHERE r.reporter_id = ?
       ORDER BY r.created_at DESC LIMIT 100
     `;
