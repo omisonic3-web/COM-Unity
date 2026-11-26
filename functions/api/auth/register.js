@@ -1,4 +1,4 @@
-import { validOrigin } from "../_utils/session.js";
+import { validOrigin, hasJsonContentType } from "../_utils/session.js";
 
 // Cloudflare Workers WebCrypto supports at most 100,000 PBKDF2 iterations.
 const ITERATIONS = 100000;
@@ -179,7 +179,7 @@ export async function onRequestPost({ request, env }) {
 
   try {
     stage = "parse_request";
-    if (!request.headers.get("content-type")?.includes("application/json")) {
+    if (!hasJsonContentType(request)) {
       return Response.json(
         { error: "Content-Type must be application/json" },
         { status: 415 }
