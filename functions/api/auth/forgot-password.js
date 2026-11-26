@@ -46,10 +46,10 @@ export async function onRequestPost({ request, env }) {
       const token = hex(crypto.getRandomValues(new Uint8Array(32)));
       const tokenHash = await digest(token);
       const expires = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-      await env.DB.prepare("DELETE FROM password_reset_tokens WHERE user_id = ?").bind(user.id).run();
-      await env.DB.prepare("INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at, consumed_at) VALUES (?, ?, ?, ?, NULL)").bind(crypto.randomUUID(), user.id, tokenHash, expires).run();
+      await env.DB.prepare("DELETE FROM auth_password_resets WHERE user_id = ?").bind(user.id).run();
+      await env.DB.prepare("INSERT INTO auth_password_resets (id, user_id, token_hash, expires_at, consumed_at) VALUES (?, ?, ?, ?, NULL)").bind(crypto.randomUUID(), user.id, tokenHash, expires).run();
       try { await sendEmail(user.email, token, env.RESEND_API_KEY, new URL(request.url).origin); }
-      catch (error) { await env.DB.prepare("DELETE FROM password_reset_tokens WHERE token_hash = ?").bind(tokenHash).run(); console.error("COM-Unity reset email failed:", error?.name || "Error"); }
+      catch (error) { await env.DB.prepare("DELETE FROM auth_password_resets WHERE token_hash = ?").bind(tokenHash).run(); console.error("COM-Unity reset email failed:", error?.name || "Error"); }
     }
     return Response.json({ ok: true, message: "Dacă există un cont verificat cu această adresă, vei primi un email cu instrucțiunile de resetare." }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
