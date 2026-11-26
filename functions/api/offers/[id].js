@@ -25,7 +25,7 @@ export async function onRequestPatch({ request, env }) {
     return json({ ok: true });
   } catch (error) {
     console.error("COM-Unity offers status update failed:", error);
-    return json({ error: "Actualizarea ofertei a eșuat în baza de date.", diagnostic: error instanceof Error ? error.message : String(error) }, 500);
+    return json({ error: "Actualizarea ofertei a eșuat." }, 500);
   }
 }
 
