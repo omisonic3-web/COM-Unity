@@ -1,4 +1,4 @@
-import { requireUser, json, validOrigin, hasJsonContentType } from "../_utils/session.js";
+import { requireUser, json, validOrigin, hasJsonContentType, writeAuditLog } from "../_utils/session.js";
 
 async function ensureCatalog(env) {
   await env.DB.batch([
@@ -62,6 +62,7 @@ export async function onRequestPost({ request, env }) {
     } else {
       await env.DB.prepare("INSERT INTO admin_zones (id,name) VALUES (?,?)").bind(id,name).run();
     }
+    await writeAuditLog(env, auth.user.id, "catalog.create", { type, itemId: id });
     return json({ ok: true, id }, 201);
   } catch (error) {
     if (String(error).includes("UNIQUE")) return json({ error: "Există deja un element cu acest nume." }, 409);
@@ -82,7 +83,11 @@ export async function onRequestDelete({ request, env }) {
   try {
     await ensureCatalog(env);
     const table = body.type === "category" ? "admin_categories" : "admin_zones";
-    await env.DB.prepare(`UPDATE ${table} SET active = CASE WHEN active = 1 THEN 0 ELSE 1 END WHERE id = ?`).bind(body.id).run();
+    const current = await env.DB.prepare(`SELECT active FROM ${table} WHERE id = ?`).bind(body.id).first();
+    if (!current) return json({ error: "Elementul nu a fost găsit." }, 404);
+    const active = Number(current.active) === 1 ? 0 : 1;
+    await env.DB.prepare(`UPDATE ${table} SET active = ? WHERE id = ?`).bind(active, body.id).run();
+    await writeAuditLog(env, auth.user.id, "catalog.toggle", { type: body.type, itemId: body.id, active });
     return json({ ok: true });
   } catch (error) {
     console.error("Admin catalog toggle failed:", error);
