@@ -1,4 +1,4 @@
-import { requireUser, json, validOrigin, hasJsonContentType, checkRateLimit, rateLimitResponse } from "./_utils/session.js";
+import { requireUser, json, validOrigin, hasJsonContentType, checkRateLimit, rateLimitResponse, writeAuditLog } from "./_utils/session.js";
 
 async function ensureReports(env) {
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS reports (
@@ -91,6 +91,7 @@ export async function onRequestPatch({ request, env }) {
     const result = await env.DB.prepare("UPDATE reports SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
       .bind(body.status, body.id).run();
     if (!result.meta?.changes) return json({ error: "Sesizarea nu a fost găsită." }, 404);
+    await writeAuditLog(env, auth.user.id, "moderation.report_status", { reportId: body.id, status: body.status });
     return json({ ok: true });
   } catch (error) {
     console.error("COM-Unity report status update failed:", error);
