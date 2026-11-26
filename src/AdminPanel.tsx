@@ -10,7 +10,7 @@ type Zone = { id: string; name: string; active: number };
 type UsefulLink = { id: string; title: string; url: string; description: string; active: number };
 type AboutContent = { title: string; intro: string; mission: string; vision: string; values_text: string; contact_email: string; contact_location: string };
 type AuditLog = { id: string; action: string; adminId: string | null; details: string; createdAt: string };
-type Report = { id: string; category: string; reason: string; details: string; target_type: string | null; target_id: string | null; target_title?: string | null; status: string; created_at: string; updated_at: string; reporter_name: string };
+type Report = { id: string; category: string; reason: string; details: string; target_type: string | null; target_id: string | null; target_title?: string | null; admin_note?: string; status: string; created_at: string; updated_at: string; reporter_name: string };
 
 type AuditDetails = { type?: string; itemId?: string; reportId?: string; active?: boolean; status?: string; fields?: string[] };
 
@@ -25,7 +25,8 @@ function formatAuditAction(action: string) {
     'links.update': 'Actualizare link util',
     'links.toggle': 'Activare / dezactivare link util',
     'links.delete': 'Ștergere link util',
-    'moderation.report_status': 'Actualizare stare sesizare'
+    'moderation.report_status': 'Actualizare stare sesizare',
+    'moderation.report_note': 'Salvare notă internă la sesizare'
   };
   return labels[action] || action || '—';
 }
@@ -61,6 +62,7 @@ function AdminPanel() {
   const [reports, setReports] = useState<Report[]>([]);
   const [reportFilter, setReportFilter] = useState('open');
   const [updatingReportId, setUpdatingReportId] = useState<string | null>(null);
+  const [reportNotes, setReportNotes] = useState<Record<string, string>>({});
   const [categories, setCategories] = useState<Category[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [links, setLinks] = useState<UsefulLink[]>([]);
@@ -249,6 +251,27 @@ function AdminPanel() {
       setMemberActivityError(err instanceof Error ? err.message : 'A apărut o eroare.');
     } finally {
       setMemberActivityLoading(null);
+    }
+  }
+
+  async function saveReportNote(report: Report) {
+    setUpdatingReportId(report.id);
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch('/api/reports', {
+        method: 'PATCH', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: report.id, adminNote: reportNotes[report.id] ?? report.admin_note ?? '' })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Nota internă nu a putut fi salvată.');
+      setSuccess('Nota internă a fost salvată.');
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'A apărut o eroare.');
+    } finally {
+      setUpdatingReportId(null);
     }
   }
 
@@ -455,6 +478,10 @@ function AdminPanel() {
                   {report.target_type && <small>Element raportat: {({ user: 'Cont de membru', request: 'Cerere de ajutor', offer: 'Ofertă de ajutor', project: 'Proiect comunitar', message: 'Mesaj' } as Record<string, string>)[report.target_type] || 'Alt element'}{report.target_id ? ' · ID: ' + report.target_id.slice(0, 8) : ''}</small>}
                   {report.target_title && <small>Titlul elementului: <strong>{report.target_title}</strong></small>}
                   <small>Stare: {({ pending: 'În așteptare', reviewing: 'În analiză', resolved: 'Rezolvată', dismissed: 'Respinsă' } as Record<string, string>)[report.status] || report.status}</small>
+                  <label className="admin-report-note">Notă internă (vizibilă doar moderatorilor)
+                    <textarea value={reportNotes[report.id] ?? report.admin_note ?? ''} onChange={event => setReportNotes(current => ({ ...current, [report.id]: event.target.value }))} maxLength={1000} rows={2} placeholder="Notează verificările sau măsurile luate..." />
+                  </label>
+                  <button type="button" className="admin-catalog-toggle" disabled={updatingReportId === report.id} onClick={() => void saveReportNote(report)}>{updatingReportId === report.id ? 'Se salvează...' : 'Salvează nota internă'}</button>
                 </div>
                 <div className="admin-link-actions">
                   <button type="button" className="admin-catalog-toggle" disabled={updatingReportId === report.id || report.status === 'reviewing'} onClick={() => void updateReportStatus(report, 'reviewing')}>În analiză</button>
