@@ -247,7 +247,7 @@ function AdminPanel() {
   function exportMembersCsv() {
     const escapeCsv = (value: string) => {
       // Prevent spreadsheet formula injection from user-controlled names.
-      const safeValue = /^[\\s]*[=+\\-@]/.test(value) ? "'" + value : value;
+      const safeValue = /^\s*[=+\-@]/.test(value) ? "'" + value : value;
       return '"' + safeValue.replace(/"/g, '""') + '"';
     };
     const rows = [
