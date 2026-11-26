@@ -102,16 +102,28 @@ export async function onRequestPatch({ request, env }) {
   let body;
   try { body = await request.json(); } catch { return json({ error: "Date JSON invalide." }, 400); }
   const statuses = ["reviewing", "resolved", "dismissed"];
-  if (typeof body?.id !== "string" || !body.id || !statuses.includes(body.status)) return json({ error: "Actualizare invalidă." }, 400);
+  const hasStatus = typeof body?.status === "string";
+  const hasNote = typeof body?.adminNote === "string";
+  if (typeof body?.id !== "string" || !body.id || (!hasStatus && !hasNote)) return json({ error: "Actualizare invalidă." }, 400);
+  if (hasStatus && !statuses.includes(body.status)) return json({ error: "Starea selectată nu este validă." }, 400);
+  if (hasNote && body.adminNote.length > 1000) return json({ error: "Nota internă poate avea maximum 1.000 de caractere." }, 400);
   try {
     await ensureReports(env);
-    const result = await env.DB.prepare("UPDATE reports SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
-      .bind(body.status, body.id).run();
-    if (!result.meta?.changes) return json({ error: "Sesizarea nu a fost găsită." }, 404);
-    await writeAuditLog(env, auth.user.id, "moderation.report_status", { reportId: body.id, status: body.status });
+    const existing = await env.DB.prepare("SELECT id FROM reports WHERE id = ?").bind(body.id).first();
+    if (!existing) return json({ error: "Sesizarea nu a fost găsită." }, 404);
+    if (hasStatus) {
+      await env.DB.prepare("UPDATE reports SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .bind(body.status, body.id).run();
+      await writeAuditLog(env, auth.user.id, "moderation.report_status", { reportId: body.id, status: body.status });
+    }
+    if (hasNote) {
+      await env.DB.prepare("UPDATE reports SET admin_note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .bind(body.adminNote.trim(), body.id).run();
+      await writeAuditLog(env, auth.user.id, "moderation.report_note", { reportId: body.id });
+    }
     return json({ ok: true });
   } catch (error) {
-    console.error("COM-Unity report status update failed:", error);
-    return json({ error: "Starea sesizării nu a putut fi actualizată." }, 500);
+    console.error("COM-Unity report moderation update failed:", error);
+    return json({ error: "Modificarea sesizării nu a putut fi salvată." }, 500);
   }
 }
