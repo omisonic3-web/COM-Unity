@@ -1,10 +1,10 @@
 import { Fragment, useEffect, useState, type FormEvent } from 'react';
-import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, ScrollText, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2, Info, Save } from 'lucide-react';
+import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, ScrollText, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2, Info, Save, Activity } from 'lucide-react';
 
 type Member = { id: string; display_name: string; email: string; role: string; verified: number; registered_at?: string | null };
 type MemberActivityItem = { activity_type: string; title: string; status: string; created_at: string };
 type MemberActivity = { activity: MemberActivityItem[]; limited: boolean };
-type Stats = { users: number; requests: number; offers: number; projects: number };
+type Stats = { users: number; requests: number; offers: number; projects: number; activeMembers: number };
 type Category = { id: string; name: string; kind: 'both' | 'request' | 'offer'; active: number };
 type Zone = { id: string; name: string; active: number };
 type UsefulLink = { id: string; title: string; url: string; description: string; active: number };
@@ -255,7 +255,8 @@ function AdminPanel() {
     { label: 'Membri înregistrați', value: stats?.users, icon: Users },
     { label: 'Cereri de ajutor', value: stats?.requests, icon: HandHeart },
     { label: 'Oferte de ajutor', value: stats?.offers, icon: HeartHandshake },
-    { label: 'Proiecte comunitare', value: stats?.projects, icon: FolderKanban }
+    { label: 'Proiecte comunitare', value: stats?.projects, icon: FolderKanban },
+    { label: 'Membri cu activitate publică', value: stats?.activeMembers, icon: Activity }
   ];
 
   return (
