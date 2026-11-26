@@ -47,6 +47,7 @@ export async function onRequestGet({ request, env }) {
     if (!project) return json({ error: "Proiectul nu a fost găsit." }, 404);
     const people = await participants(env, id);
     const isParticipant = people.some(person => person.id === auth.user.id);
+    if (!isParticipant) return json({ error: "Evaluările acestui proiect sunt vizibile doar participanților." }, 403);
     const ratings = await env.DB.prepare(`
       SELECT r.id, r.reviewer_id, r.reviewee_id, r.rating, r.comment, r.created_at,
              reviewer.display_name AS reviewer_name, reviewee.display_name AS reviewee_name
