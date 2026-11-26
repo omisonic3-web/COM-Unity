@@ -23,10 +23,10 @@ export async function onRequestPost({ request, env }) {
     const passwordHash = await hashPassword(password);
     const now = new Date().toISOString();
     const results = await env.DB.batch([
-      env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = (SELECT user_id FROM password_reset_tokens WHERE token_hash = ? AND expires_at > ? AND consumed_at IS NULL LIMIT 1) RETURNING id").bind(passwordHash, tokenHash, now),
-      env.DB.prepare("UPDATE password_reset_tokens SET consumed_at = ? WHERE token_hash = ? AND expires_at > ? AND consumed_at IS NULL").bind(now, tokenHash, now),
-      env.DB.prepare("DELETE FROM sessions WHERE user_id = (SELECT user_id FROM password_reset_tokens WHERE token_hash = ? LIMIT 1)").bind(tokenHash),
-      env.DB.prepare("DELETE FROM password_reset_tokens WHERE user_id = (SELECT user_id FROM password_reset_tokens WHERE token_hash = ? LIMIT 1) AND token_hash <> ?").bind(tokenHash, tokenHash)
+      env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = (SELECT user_id FROM auth_password_resets WHERE token_hash = ? AND expires_at > ? AND consumed_at IS NULL LIMIT 1) RETURNING id").bind(passwordHash, tokenHash, now),
+      env.DB.prepare("UPDATE auth_password_resets SET consumed_at = ? WHERE token_hash = ? AND expires_at > ? AND consumed_at IS NULL").bind(now, tokenHash, now),
+      env.DB.prepare("DELETE FROM sessions WHERE user_id = (SELECT user_id FROM auth_password_resets WHERE token_hash = ? LIMIT 1)").bind(tokenHash),
+      env.DB.prepare("DELETE FROM auth_password_resets WHERE user_id = (SELECT user_id FROM auth_password_resets WHERE token_hash = ? LIMIT 1) AND token_hash <> ?").bind(tokenHash, tokenHash)
     ]);
     const userId = results?.[0]?.results?.[0]?.id;
     if (!userId) return Response.json({ error: "Linkul de resetare este invalid sau a expirat. Solicită unul nou." }, { status: 400, headers: { "Cache-Control": "no-store" } });
