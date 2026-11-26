@@ -1,4 +1,4 @@
-import { validOrigin } from "../_utils/session.js";
+import { validOrigin, hasJsonContentType } from "../_utils/session.js";
 
 const SESSION_DAYS = 30;
 const COOKIE_NAME = "__Host-comunity_session";
@@ -146,7 +146,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    if (!request.headers.get("content-type")?.includes("application/json")) {
+    if (!hasJsonContentType(request)) {
       return Response.json(
         { error: "Content-Type must be application/json" },
         { status: 415 }
