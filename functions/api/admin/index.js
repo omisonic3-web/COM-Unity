@@ -11,7 +11,7 @@ export async function onRequestGet({ request, env }) {
       env.DB.prepare("SELECT COUNT(*) AS total FROM help_requests").first(),
       env.DB.prepare("SELECT COUNT(*) AS total FROM help_offers").first(),
       env.DB.prepare("SELECT COUNT(*) AS total FROM projects").first(),
-      env.DB.prepare("SELECT id, display_name, email, role, verified FROM users ORDER BY display_name COLLATE NOCASE LIMIT 200").all()
+      env.DB.prepare("SELECT u.id, u.display_name, u.email, u.role, u.verified, ra.accepted_at AS registered_at FROM users u LEFT JOIN registration_acceptances ra ON ra.user_id = u.id ORDER BY u.display_name COLLATE NOCASE LIMIT 200").all()
     ]);
     return json({
       stats: {
