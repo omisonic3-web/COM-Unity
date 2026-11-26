@@ -428,6 +428,12 @@ function AdminPanel() {
 
       <section className="dashboard-panel admin-catalog">
         <div className="panel-heading"><div><h2><Flag size={18} /> Moderare sesizări</h2><p>Verifică sesizările comunității și actualizează starea acestora. Modificările sunt înregistrate în jurnal.</p></div></div>
+        <div className="admin-stat-grid">
+          <article className="admin-stat-card"><span><Flag size={17} /></span><strong>{reports.filter(report => report.status === 'pending').length}</strong><small>În așteptare</small></article>
+          <article className="admin-stat-card"><span><Activity size={17} /></span><strong>{reports.filter(report => report.status === 'reviewing').length}</strong><small>În analiză</small></article>
+          <article className="admin-stat-card"><span><ShieldCheck size={17} /></span><strong>{reports.filter(report => report.status === 'resolved').length}</strong><small>Rezolvate</small></article>
+          <article className="admin-stat-card"><span><Info size={17} /></span><strong>{reports.filter(report => report.status === 'dismissed').length}</strong><small>Respinse</small></article>
+        </div>
         <div className="admin-catalog-form">
           <select value={reportFilter} onChange={event => setReportFilter(event.target.value)} aria-label="Filtrează sesizările">
             <option value="open">În așteptare și în analiză</option><option value="pending">Doar în așteptare</option>
