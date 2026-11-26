@@ -10,6 +10,21 @@ export async function onRequestGet({ request, env }) {
   if (auth.error) return json({ error: auth.error }, auth.status);
   const id = requestId(request);
   try {
+    const access = await env.DB.prepare(`
+      SELECT 1
+      FROM help_requests h
+      WHERE h.id = ?
+        AND (
+          h.user_id = ?
+          OR EXISTS (
+            SELECT 1 FROM help_request_responses mine
+            WHERE mine.request_id = h.id AND mine.user_id = ?
+          )
+        )
+      LIMIT 1
+    `).bind(id, auth.user.id, auth.user.id).first();
+    if (!access) return json({ error: "Nu ai acces la conversația acestei cereri." }, 403);
+
     const rows = await env.DB.prepare(`
       SELECT r.id, r.user_id, r.message, r.created_at,
              COALESCE(u.display_name, 'Membru') AS author_name
