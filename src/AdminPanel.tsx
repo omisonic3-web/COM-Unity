@@ -43,6 +43,16 @@ function formatAuditDetails(value: string) {
   } catch { return '—'; }
 }
 
+function formatMemberActivityStatus(status: string) {
+  const labels: Record<string, string> = {
+    open: 'Deschisă',
+    closed: 'Închisă',
+    active: 'Activ',
+    completed: 'Finalizat'
+  };
+  return labels[status] || status || '—';
+}
+
 function AdminPanel() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -345,7 +355,7 @@ function AdminPanel() {
                     <div className="admin-muted">
                       <strong>Activitate publică: {member.display_name}</strong>
                       {memberActivityLoading === member.id ? <p>Se încarcă activitatea...</p> : memberActivityError ? <p role="alert">{memberActivityError}</p> : !memberActivities[member.id] ? <p>Activitatea nu este încărcată.</p> : memberActivities[member.id].activity.length === 0 ? <p>Nu există cereri, oferte sau proiecte publicate de acest membru.</p> : (
-                        <ul>{memberActivities[member.id].activity.map((item, index) => <li key={item.activity_type + item.created_at + index}>{item.activity_type}: <strong>{item.title}</strong> · {item.status} · {item.created_at ? new Date(item.created_at).toLocaleString('ro-RO') : '—'}</li>)}</ul>
+                        <ul>{memberActivities[member.id].activity.map((item, index) => <li key={item.activity_type + item.created_at + index}>{item.activity_type}: <strong>{item.title}</strong> · {formatMemberActivityStatus(item.status)} · {item.created_at && !Number.isNaN(new Date(item.created_at).getTime()) ? new Date(item.created_at).toLocaleString('ro-RO') : '—'}</li>)}</ul>
                       )}
                       {memberActivities[member.id]?.limited && <p>Sunt afișate cel mult 50 de înregistrări recente.</p>}
                     </div>
