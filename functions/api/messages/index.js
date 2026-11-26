@@ -12,7 +12,6 @@ export async function onRequestGet({ request, env }) {
       return json({ unread_count: count?.count || 0, latest: latest || null });
     }
     if (otherId) {
-      await env.DB.prepare("UPDATE messages SET read_at = CURRENT_TIMESTAMP WHERE sender_id = ? AND receiver_id = ? AND read_at IS NULL").bind(otherId, auth.user.id).run();
       const rows = await env.DB.prepare(`
         SELECT m.id, m.sender_id, m.receiver_id, m.message, m.created_at,
                u.display_name AS sender_name
@@ -71,5 +70,24 @@ export async function onRequestPost({ request, env }) {
   } catch (error) {
     console.error("COM-Unity message send failed:", error);
     return json({ error: "Mesajul nu a putut fi trimis." }, 500);
+  }
+}
+
+export async function onRequestPatch({ request, env }) {
+  if (!validOrigin(request)) return json({ error: "Solicitare nepermisă." }, 403);
+  const auth = await requireUser(request, env);
+  if (auth.error) return json({ error: auth.error }, auth.status);
+  const otherId = new URL(request.url).searchParams.get("with");
+  if (!otherId || otherId.length > 100 || otherId === auth.user.id) {
+    return json({ error: "Conversație invalidă." }, 400);
+  }
+  try {
+    await env.DB.prepare(
+      "UPDATE messages SET read_at = CURRENT_TIMESTAMP WHERE sender_id = ? AND receiver_id = ? AND read_at IS NULL"
+    ).bind(otherId, auth.user.id).run();
+    return json({ ok: true });
+  } catch (error) {
+    console.error("COM-Unity message read update failed:", error);
+    return json({ error: "Mesajele nu au putut fi marcate ca citite." }, 500);
   }
 }
