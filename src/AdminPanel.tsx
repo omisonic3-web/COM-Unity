@@ -244,6 +244,31 @@ function AdminPanel() {
     }
   }
 
+  function exportMembersCsv() {
+    const escapeCsv = (value: string) => '"' + value.replace(/"/g, '""') + '"';
+    const rows = [
+      ['Nume', 'Rol', 'Cont', 'Data înregistrării'],
+      ...filteredMembers.map(member => [
+        member.display_name || '',
+        member.role === 'admin' ? 'Administrator' : member.role === 'moderator' ? 'Moderator' : 'Membru',
+        member.verified ? 'Confirmat' : 'Neconfirmat',
+        member.registered_at && !Number.isNaN(new Date(member.registered_at).getTime())
+          ? new Date(member.registered_at).toLocaleDateString('ro-RO')
+          : ''
+      ])
+    ];
+    const csv = '\\uFEFF' + rows.map(row => row.map(value => escapeCsv(String(value))).join(';')).join('\\r\\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'membri-com-unity.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
   const normalizedMemberSearch = memberSearch.trim().toLocaleLowerCase('ro-RO');
   const filteredMembers = members.filter(member => {
     const matchesSearch = !normalizedMemberSearch || `${member.display_name} ${member.email}`.toLocaleLowerCase('ro-RO').includes(normalizedMemberSearch);
@@ -339,6 +364,10 @@ function AdminPanel() {
             <option value="admin">Administratori</option>
           </select>
         </div>
+        <div className="admin-links-form-actions">
+          <button type="button" className="button button-outline" onClick={exportMembersCsv} disabled={loading || filteredMembers.length === 0}>Exportă lista afișată (CSV)</button>
+        </div>
+        <p className="admin-muted">Exportul include doar membrii afișați după filtre, fără adrese de email. Lista disponibilă este limitată la maximum 200 de conturi.</p>
         <p className="admin-muted">Afișați: {filteredMembers.length} din {members.length} conturi încărcate.</p>
         {loading ? <p className="admin-muted">Se încarcă membrii...</p> : members.length === 0 ? <p className="admin-muted">Nu există membri de afișat.</p> : filteredMembers.length === 0 ? <p className="admin-muted">Nu există conturi care să corespundă căutării și filtrului selectat.</p> : (
           <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Nume</th><th>Email</th><th>Rol</th><th>Cont</th><th>Înregistrat</th><th>Detalii</th></tr></thead><tbody>
