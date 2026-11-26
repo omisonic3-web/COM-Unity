@@ -1,16 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2, Info, Save } from 'lucide-react';
+import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, ScrollText, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2, Info, Save } from 'lucide-react';
 
 type Member = { id: string; display_name: string; email: string; role: string; verified: number };
 type Stats = { users: number; requests: number; offers: number; projects: number };
 type Category = { id: string; name: string; kind: 'both' | 'request' | 'offer'; active: number };
 type Zone = { id: string; name: string; active: number };
 type UsefulLink = { id: string; title: string; url: string; description: string; active: number };
-type AboutContent = { title: string; intro: string; mission: string; vision: string; values_text: string; contact_email: string; contact_location: string };
+type AboutContent = { title: string; intro: string; mission: string; vision: string; values_text: string; contact_email: string; contact_location: string };\ntype AuditLog = { id: string; action: string; adminId: string | null; details: string; createdAt: string };
 
 function AdminPanel() {
   const [stats, setStats] = useState<Stats | null>(null);
-  const [members, setMembers] = useState<Member[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);\n  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [links, setLinks] = useState<UsefulLink[]>([]);
@@ -30,22 +30,22 @@ function AdminPanel() {
   async function load() {
     setLoading(true); setError('');
     try {
-      const [overviewResponse, catalogResponse, linksResponse, aboutResponse] = await Promise.all([
+      const [overviewResponse, catalogResponse, linksResponse, aboutResponse, auditResponse] = await Promise.all([
         fetch('/api/admin', { credentials: 'same-origin', cache: 'no-store' }),
         fetch('/api/admin/catalog', { credentials: 'same-origin', cache: 'no-store' }),
         fetch('/api/admin/links', { credentials: 'same-origin', cache: 'no-store' }),
-        fetch('/api/admin/about', { credentials: 'same-origin', cache: 'no-store' })
+        fetch('/api/admin/about', { credentials: 'same-origin', cache: 'no-store' }),\n        fetch('/api/admin/audit?limit=50', { credentials: 'same-origin', cache: 'no-store' })
       ]);
       const overview = await overviewResponse.json().catch(() => ({}));
       const catalog = await catalogResponse.json().catch(() => ({}));
       const linkData = await linksResponse.json().catch(() => ({}));
-      const aboutData = await aboutResponse.json().catch(() => ({}));
+      const aboutData = await aboutResponse.json().catch(() => ({}));\n      const auditData = await auditResponse.json().catch(() => ({}));
       if (!overviewResponse.ok) throw new Error(overview.error || 'Datele nu au putut fi încărcate.');
       if (!catalogResponse.ok) throw new Error(catalog.error || 'Temele și zonele nu au putut fi încărcate.');
       if (!linksResponse.ok) throw new Error(linkData.error || 'Linkurile utile nu au putut fi încărcate.');
-      if (!aboutResponse.ok) throw new Error(aboutData.error || 'Prezentarea Despre noi nu a putut fi încărcată.');
+      if (!aboutResponse.ok) throw new Error(aboutData.error || 'Prezentarea Despre noi nu a putut fi încărcată.');\n      if (!auditResponse.ok) throw new Error(auditData.error || 'Jurnalul de activitate nu a putut fi încărcat.');
       setStats(overview.stats);
-      setMembers(overview.members || []);
+      setMembers(overview.members || []);\n      setAuditLogs(auditData.logs || []);
       setCategories(catalog.categories || []);
       setZones(catalog.zones || []);
       setLinks(linkData.links || []);
@@ -248,7 +248,7 @@ function AdminPanel() {
         )}
       </section>
 
-      <div className="admin-coming-grid">
+      <section className="dashboard-panel admin-catalog">\n        <div className="panel-heading"><div><h2><ScrollText size={18} /> Jurnal de activitate</h2><p>Ultimele 50 de evenimente administrative înregistrate.</p></div></div>\n        {loading ? <p className="admin-muted">Se încarcă jurnalul...</p> : auditLogs.length === 0 ? <p className="admin-muted">Nu există încă evenimente în jurnal.</p> : (\n          <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Data</th><th>Acțiune</th><th>ID administrator</th><th>Detalii</th></tr></thead><tbody>\n            {auditLogs.map(log => <tr key={log.id}><td>{log.createdAt ? new Date(log.createdAt).toLocaleString('ro-RO') : '—'}</td><td>{log.action || '—'}</td><td>{log.adminId || '—'}</td><td>{log.details || '—'}</td></tr>)}\n          </tbody></table></div>\n        )}\n      </section>\n\n      <div className="admin-coming-grid">
         <article className="dashboard-panel"><span className="admin-feature-icon"><ShieldCheck size={20} /></span><h3>Moderare</h3><p>Instrumente pentru verificarea și gestionarea conținutului publicat.</p><span className="admin-feature-status">Modul următor</span></article>
         
       </div>
