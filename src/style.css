@@ -656,6 +656,8 @@ footer .brand {
   position: sticky;
   top: 0;
   height: 100vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   padding: 27px 18px 20px;
@@ -704,7 +706,7 @@ footer .brand {
   background: #66e0f4;
   box-shadow: 0 0 14px #66e0f488;
 }
-.sidebar-bottom { display: grid; gap: 17px; margin-top: auto; }
+.sidebar-bottom { display: grid; gap: 17px; margin-top: auto; flex-shrink: 0; }
 .sidebar-trust {
   display: flex;
   align-items: center;
