@@ -70,3 +70,18 @@ export async function checkRateLimit(env, scope, userId, maxAttempts, windowSeco
   const retryAfter = Math.max(1, windowSeconds - (now - Number(row?.window_started_at || now)));
   return { allowed: Number(row?.attempts || 0) <= maxAttempts, retryAfter };
 }
+
+
+export function rateLimitResponse(limit) {
+  const status = limit?.unavailable ? 503 : 429;
+  return new Response(JSON.stringify({
+    error: limit?.unavailable ? "Protecția anti-abuz nu este disponibilă momentan." : "Ai atins limita de acțiuni. Încearcă din nou mai târziu."
+  }), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Retry-After": String(limit?.retryAfter || 60)
+    }
+  });
+}
