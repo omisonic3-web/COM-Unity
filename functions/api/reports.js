@@ -1,4 +1,4 @@
-import { requireUser, json, validOrigin } from "./_utils/session.js";
+import { requireUser, json, validOrigin, hasJsonContentType } from "./_utils/session.js";
 
 async function ensureReports(env) {
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS reports (
@@ -42,6 +42,7 @@ export async function onRequestGet({ request, env }) {
 }
 
 export async function onRequestPost({ request, env }) {
+  if (!hasJsonContentType(request)) return json({ error: "Content-Type trebuie să fie application/json." }, 415);
   if (!validOrigin(request)) return json({ error: "Solicitare nepermisă." }, 403);
   const auth = await requireUser(request, env);
   if (auth.error) return json({ error: auth.error }, auth.status);
@@ -74,6 +75,7 @@ export async function onRequestPost({ request, env }) {
 }
 
 export async function onRequestPatch({ request, env }) {
+  if (!hasJsonContentType(request)) return json({ error: "Content-Type trebuie să fie application/json." }, 415);
   if (!validOrigin(request)) return json({ error: "Solicitare nepermisă." }, 403);
   const auth = await requireUser(request, env);
   if (auth.error) return json({ error: auth.error }, auth.status);
