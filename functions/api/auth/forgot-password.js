@@ -1,4 +1,4 @@
-import { validOrigin } from "../_utils/session.js";
+import { validOrigin, hasJsonContentType } from "../_utils/session.js";
 const WINDOW = 15 * 60;
 const MAX_ATTEMPTS = 3;
 function hex(bytes) { return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join(""); }
@@ -34,7 +34,7 @@ export async function onRequestPost({ request, env }) {
   if (!validOrigin(request)) return Response.json({ error: "Originea cererii nu este permisă." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   if (!env.DB || !env.RESEND_API_KEY) return Response.json({ error: "Serviciul de recuperare nu este disponibil." }, { status: 503, headers: { "Cache-Control": "no-store" } });
   try {
-    if (!request.headers.get("content-type")?.includes("application/json")) return Response.json({ error: "Content-Type must be application/json" }, { status: 415, headers: { "Cache-Control": "no-store" } });
+    if (!hasJsonContentType(request)) return Response.json({ error: "Content-Type must be application/json" }, { status: 415, headers: { "Cache-Control": "no-store" } });
     const body = await request.json();
     const email = String(body.email || "").trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return Response.json({ error: "Adresa de email nu este validă." }, { status: 400, headers: { "Cache-Control": "no-store" } });
