@@ -58,7 +58,9 @@ function AdminPanel() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [reports, setReports] = useState<Report[]>([]);\n  const [reportFilter, setReportFilter] = useState('open');\n  const [updatingReportId, setUpdatingReportId] = useState<string | null>(null);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [reportFilter, setReportFilter] = useState('open');
+  const [updatingReportId, setUpdatingReportId] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [links, setLinks] = useState<UsefulLink[]>([]);
