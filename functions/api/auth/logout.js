@@ -1,4 +1,6 @@
 
+import { validOrigin } from "../_utils/session.js";
+
 const COOKIE_NAME = "__Host-comunity_session";
 
 async function hashToken(token) {
@@ -32,6 +34,13 @@ function getSessionToken(request) {
 }
 
 export async function onRequestPost({ request, env }) {
+  if (!validOrigin(request)) {
+    return Response.json(
+      { error: "Origine invalidă." },
+      { status: 403, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
   const expiredCookie = [
     `${COOKIE_NAME}=`,
     "Path=/",
