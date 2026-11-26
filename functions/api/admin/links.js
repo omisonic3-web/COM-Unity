@@ -1,4 +1,4 @@
-import { requireUser, json, validOrigin, hasJsonContentType } from "../_utils/session.js";
+import { requireUser, json, validOrigin, hasJsonContentType, writeAuditLog } from "../_utils/session.js";
 
 async function ensureLinks(env) {
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS useful_links (
@@ -55,6 +55,7 @@ export async function onRequestPost({ request, env }) {
     const id = crypto.randomUUID();
     await env.DB.prepare("INSERT INTO useful_links (id,title,url,description) VALUES (?,?,?,?)")
       .bind(id, fields.title, fields.url, fields.description).run();
+    await writeAuditLog(env, auth.user.id, "links.create", { itemId: id });
     return json({ ok: true, id }, 201);
   } catch (error) {
     console.error("Useful link create failed:", error);
@@ -76,11 +77,13 @@ export async function onRequestPatch({ request, env }) {
     if (typeof body.active === "boolean") {
       await env.DB.prepare("UPDATE useful_links SET active=?,updated_at=CURRENT_TIMESTAMP WHERE id=?")
         .bind(body.active ? 1 : 0, body.id).run();
+      await writeAuditLog(env, auth.user.id, "links.toggle", { itemId: body.id, active: body.active });
     } else {
       const fields = cleanLink(body);
       if (fields.error) return json({ error: fields.error }, 400);
       await env.DB.prepare("UPDATE useful_links SET title=?,url=?,description=?,updated_at=CURRENT_TIMESTAMP WHERE id=?")
         .bind(fields.title, fields.url, fields.description, body.id).run();
+      await writeAuditLog(env, auth.user.id, "links.update", { itemId: body.id });
     }
     return json({ ok: true });
   } catch (error) {
@@ -101,6 +104,7 @@ export async function onRequestDelete({ request, env }) {
   try {
     await ensureLinks(env);
     await env.DB.prepare("DELETE FROM useful_links WHERE id=?").bind(body.id).run();
+    await writeAuditLog(env, auth.user.id, "links.delete", { itemId: body.id });
     return json({ ok: true });
   } catch (error) {
     console.error("Useful link delete failed:", error);
