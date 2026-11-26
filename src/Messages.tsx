@@ -35,13 +35,16 @@ function Messages({ userId, onRead }: { userId: string; onRead?: () => void }) {
   const loadThread = useCallback(async (otherId: string) => {
     if (!otherId) { setMessages([]); return; }
     try {
-      const markRead = await fetch(`/api/messages?with=${encodeURIComponent(otherId)}`, { method: "PATCH", credentials: "same-origin" });
-      if (!markRead.ok) throw new Error("Mesajele nu au putut fi marcate ca citite.");
       const response = await fetch(`/api/messages?with=${encodeURIComponent(otherId)}`, { credentials: "same-origin", cache: "no-store" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Nu am putut încărca conversația.");
       setMessages(data.messages || []);
       onRead?.();
+      // Mark as read only after the thread has loaded; this must not block message display.
+      void fetch(`/api/messages?with=${encodeURIComponent(otherId)}`, {
+        method: "PATCH",
+        credentials: "same-origin"
+      }).catch(() => {});
     } catch (e) { setError(e instanceof Error ? e.message : "Eroare la încărcarea conversației."); }
   }, [onRead]);
 
