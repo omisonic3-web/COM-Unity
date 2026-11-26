@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, ScrollText, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2, Info, Save } from 'lucide-react';
 
-type Member = { id: string; display_name: string; email: string; role: string; verified: number };
+type Member = { id: string; display_name: string; email: string; role: string; verified: number; registered_at?: string | null };
 type Stats = { users: number; requests: number; offers: number; projects: number };
 type Category = { id: string; name: string; kind: 'both' | 'request' | 'offer'; active: number };
 type Zone = { id: string; name: string; active: number };
@@ -299,8 +299,8 @@ function AdminPanel() {
         </div>
         <p className="admin-muted">Afișați: {filteredMembers.length} din {members.length} conturi încărcate.</p>
         {loading ? <p className="admin-muted">Se încarcă membrii...</p> : members.length === 0 ? <p className="admin-muted">Nu există membri de afișat.</p> : filteredMembers.length === 0 ? <p className="admin-muted">Nu există conturi care să corespundă căutării și filtrului selectat.</p> : (
-          <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Nume</th><th>Email</th><th>Rol</th><th>Cont</th></tr></thead><tbody>
-            {filteredMembers.map(member => <tr key={member.id}><td>{member.display_name}</td><td>{member.email}</td><td><span className={`admin-role ${member.role === 'admin' ? 'is-admin' : ''}`}>{member.role === 'admin' ? 'Administrator' : member.role === 'moderator' ? 'Moderator' : 'Membru'}</span></td><td>{member.verified ? 'Confirmat' : 'Neconfirmat'}</td></tr>)}
+          <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Nume</th><th>Email</th><th>Rol</th><th>Cont</th><th>Înregistrat</th></tr></thead><tbody>
+            {filteredMembers.map(member => <tr key={member.id}><td>{member.display_name}</td><td>{member.email}</td><td><span className={`admin-role ${member.role === 'admin' ? 'is-admin' : ''}`}>{member.role === 'admin' ? 'Administrator' : member.role === 'moderator' ? 'Moderator' : 'Membru'}</span></td><td>{member.verified ? 'Confirmat' : 'Neconfirmat'}</td><td>{member.registered_at ? new Date(member.registered_at).toLocaleDateString('ro-RO') : '—'}</td></tr>)}
           </tbody></table></div>
         )}
       </section>
