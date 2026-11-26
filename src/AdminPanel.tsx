@@ -10,7 +10,7 @@ type Zone = { id: string; name: string; active: number };
 type UsefulLink = { id: string; title: string; url: string; description: string; active: number };
 type AboutContent = { title: string; intro: string; mission: string; vision: string; values_text: string; contact_email: string; contact_location: string };
 type AuditLog = { id: string; action: string; adminId: string | null; details: string; createdAt: string };
-type Report = { id: string; category: string; reason: string; details: string; target_type: string | null; target_id: string | null; status: string; created_at: string; updated_at: string; reporter_name: string };
+type Report = { id: string; category: string; reason: string; details: string; target_type: string | null; target_id: string | null; target_title?: string | null; status: string; created_at: string; updated_at: string; reporter_name: string };
 
 type AuditDetails = { type?: string; itemId?: string; reportId?: string; active?: boolean; status?: string; fields?: string[] };
 
@@ -452,7 +452,8 @@ function AdminPanel() {
                   <strong>{report.reason}</strong>
                   <small>{({ harassment: 'Hărțuire', spam: 'Spam', fraud: 'Fraudă', inappropriate: 'Conținut nepotrivit', fake: 'Informații false', other: 'Altele' } as Record<string, string>)[report.category] || report.category} · {report.reporter_name || 'Membru'} · {report.created_at && !Number.isNaN(new Date(report.created_at).getTime()) ? new Date(report.created_at).toLocaleString('ro-RO') : '—'}</small>
                   {report.details && <p>{report.details}</p>}
-                  {report.target_type && <small>Element raportat: {report.target_type}{report.target_id ? ' · ' + report.target_id.slice(0, 8) : ''}</small>}
+                  {report.target_type && <small>Element raportat: {({ user: 'Cont de membru', request: 'Cerere de ajutor', offer: 'Ofertă de ajutor', project: 'Proiect comunitar', message: 'Mesaj' } as Record<string, string>)[report.target_type] || 'Alt element'}{report.target_id ? ' · ID: ' + report.target_id.slice(0, 8) : ''}</small>}
+                  {report.target_title && <small>Titlul elementului: <strong>{report.target_title}</strong></small>}
                   <small>Stare: {({ pending: 'În așteptare', reviewing: 'În analiză', resolved: 'Rezolvată', dismissed: 'Respinsă' } as Record<string, string>)[report.status] || report.status}</small>
                 </div>
                 <div className="admin-link-actions">
