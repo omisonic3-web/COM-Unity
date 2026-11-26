@@ -1,4 +1,4 @@
-import { requireUser, json, validOrigin, hasJsonContentType } from "../_utils/session.js";
+import { requireUser, json, validOrigin, hasJsonContentType, checkRateLimit, rateLimitResponse } from "../_utils/session.js";
 
 export async function onRequestGet({ request, env }) {
   const auth = await requireUser(request, env);
@@ -56,6 +56,8 @@ export async function onRequestPost({ request, env }) {
   if (!validOrigin(request)) return json({ error: "Solicitare nepermisă." }, 403);
   const auth = await requireUser(request, env);
   if (auth.error) return json({ error: auth.error }, auth.status);
+  const limit = await checkRateLimit(env, "message_send", auth.user.id, 20, 600);
+  if (!limit.allowed) return rateLimitResponse(limit);
   let body;
   try { body = await request.json(); } catch { return json({ error: "Date JSON invalide." }, 400); }
   const receiverId = typeof body?.receiver_id === "string" ? body.receiver_id.trim() : "";
