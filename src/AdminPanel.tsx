@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useState, type FormEvent } from 'react';
 import { Users, HandHeart, HeartHandshake, FolderKanban, RefreshCw, ShieldCheck, ScrollText, Plus, MapPin, Tags, Power, Link2, Pencil, Trash2, Info, Save } from 'lucide-react';
 
 type Member = { id: string; display_name: string; email: string; role: string; verified: number; registered_at?: string | null };
@@ -332,7 +332,7 @@ function AdminPanel() {
         {loading ? <p className="admin-muted">Se încarcă membrii...</p> : members.length === 0 ? <p className="admin-muted">Nu există membri de afișat.</p> : filteredMembers.length === 0 ? <p className="admin-muted">Nu există conturi care să corespundă căutării și filtrului selectat.</p> : (
           <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Nume</th><th>Email</th><th>Rol</th><th>Cont</th><th>Înregistrat</th><th>Detalii</th></tr></thead><tbody>
             {filteredMembers.map(member => (
-              <>
+              <Fragment key={member.id}>
                 <tr key={member.id}>
                   <td>{member.display_name}</td><td>{member.email}</td>
                   <td><span className={`admin-role ${member.role === 'admin' ? 'is-admin' : ''}`}>{member.role === 'admin' ? 'Administrator' : member.role === 'moderator' ? 'Moderator' : 'Membru'}</span></td>
@@ -351,7 +351,7 @@ function AdminPanel() {
                     </div>
                   </td></tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody></table></div>
         )}
