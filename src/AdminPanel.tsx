@@ -9,6 +9,22 @@ type UsefulLink = { id: string; title: string; url: string; description: string;
 type AboutContent = { title: string; intro: string; mission: string; vision: string; values_text: string; contact_email: string; contact_location: string };
 type AuditLog = { id: string; action: string; adminId: string | null; details: string; createdAt: string };
 
+type AuditDetails = { type?: string; itemId?: string; reportId?: string; active?: boolean; status?: string; fields?: string[] };
+
+function formatAuditDetails(value: string) {
+  try {
+    const details = JSON.parse(value) as AuditDetails;
+    const parts: string[] = [];
+    if (details.type) parts.push(details.type === 'category' ? 'Temă' : 'Zonă');
+    if (typeof details.active === 'boolean') parts.push(details.active ? 'Activat' : 'Dezactivat');
+    if (details.status) parts.push(({ reviewing: 'În analiză', resolved: 'Rezolvată', dismissed: 'Respinsă' } as Record<string, string>)[details.status] || details.status);
+    if (details.fields?.length) parts.push('Câmpuri: ' + details.fields.length);
+    if (details.itemId) parts.push('ID: ' + details.itemId.slice(0, 8));
+    if (details.reportId) parts.push('Sesizare: ' + details.reportId.slice(0, 8));
+    return parts.join(' · ') || '—';
+  } catch { return '—'; }
+}
+
 function AdminPanel() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -258,7 +274,7 @@ function AdminPanel() {
         <div className="panel-heading"><div><h2><ScrollText size={18} /> Jurnal de activitate</h2><p>Ultimele 50 de evenimente administrative înregistrate.</p></div></div>
         {loading ? <p className="admin-muted">Se încarcă jurnalul...</p> : auditLogs.length === 0 ? <p className="admin-muted">Nu există încă evenimente în jurnal.</p> : (
           <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Data</th><th>Acțiune</th><th>ID administrator</th><th>Detalii</th></tr></thead><tbody>
-            {auditLogs.map(log => <tr key={log.id}><td>{log.createdAt ? new Date(log.createdAt).toLocaleString('ro-RO') : '—'}</td><td>{log.action || '—'}</td><td>{log.adminId || '—'}</td><td>{log.details || '—'}</td></tr>)}
+            {auditLogs.map(log => <tr key={log.id}><td>{log.createdAt ? new Date(log.createdAt).toLocaleString('ro-RO') : '—'}</td><td>{log.action || '—'}</td><td>{log.adminId || '—'}</td><td>{formatAuditDetails(log.details)}</td></tr>)}
           </tbody></table></div>
         )}
       </section>
