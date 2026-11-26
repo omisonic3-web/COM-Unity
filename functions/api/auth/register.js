@@ -168,7 +168,6 @@ export async function onRequestPost({ request, env }) {
 
   let stage = "environment_check";
   let failureStage = null;
-  const isPreview = new URL(request.url).hostname.endsWith(".com-unity.pages.dev");
 
   if (!env.DB || !env.RESEND_API_KEY) {
     return Response.json(
@@ -376,8 +375,7 @@ export async function onRequestPost({ request, env }) {
 
     return Response.json(
       {
-        error: "Registration failed. Please try again later.",
-        ...(isPreview ? { diagnostic: diagnosticStage, diagnosticReason: `${error?.name || "Error"}: ${String(error?.message || "Unknown error").slice(0, 180)}` } : {})
+        error: "Registration failed. Please try again later."
       },
       {
         status: 500,
