@@ -36,7 +36,22 @@ export async function onRequestGet({ request, env }) {
       ORDER BY r.created_at DESC LIMIT 100
     `;
     const result = isModerator ? await env.DB.prepare(query).all() : await env.DB.prepare(query).bind(auth.user.id).all();
-    return json({ reports: result.results || [] });
+    const reports = result.results || [];
+    if (isModerator) {
+      await Promise.all(reports.map(async report => {
+        if (!report.target_id) return;
+        let target = null;
+        if (report.target_type === "request") {
+          target = await env.DB.prepare("SELECT title FROM help_requests WHERE id = ?").bind(report.target_id).first();
+        } else if (report.target_type === "offer") {
+          target = await env.DB.prepare("SELECT title FROM help_offers WHERE id = ?").bind(report.target_id).first();
+        } else if (report.target_type === "project") {
+          target = await env.DB.prepare("SELECT title FROM projects WHERE id = ?").bind(report.target_id).first();
+        }
+        report.target_title = typeof target?.title === "string" ? target.title : null;
+      }));
+    }
+    return json({ reports });
   } catch (error) {
     console.error("COM-Unity reports list failed:", error);
     return json({ error: "Sesizările nu au putut fi încărcate." }, 500);
