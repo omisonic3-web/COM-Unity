@@ -1,4 +1,4 @@
-import { requireUser, json, validOrigin, hasJsonContentType } from "../../_utils/session.js";
+import { requireUser, json, validOrigin, hasJsonContentType, checkRateLimit, rateLimitResponse } from "../../_utils/session.js";
 
 function requestId(request) {
   const parts = new URL(request.url).pathname.split("/").filter(Boolean);
@@ -31,6 +31,8 @@ export async function onRequestPost({ request, env }) {
   if (!validOrigin(request)) return json({ error: "Solicitare nepermisă." }, 403);
   const auth = await requireUser(request, env);
   if (auth.error) return json({ error: auth.error }, auth.status);
+  const limit = await checkRateLimit(env, "request_response", auth.user.id, 20, 3600);
+  if (!limit.allowed) return rateLimitResponse(limit);
   const id = requestId(request);
   let body;
   try { body = await request.json(); } catch { return json({ error: "Date JSON invalide." }, 400); }
