@@ -1,4 +1,4 @@
-import { validOrigin, hasJsonContentType } from "../_utils/session.js";
+import { validOrigin, hasJsonContentType, writeAuditLog } from "../_utils/session.js";
 
 const SESSION_DAYS = 30;
 const COOKIE_NAME = "__Host-comunity_session";
@@ -270,6 +270,10 @@ export async function onRequestPost({ request, env }) {
       tokenHash,
       expiresAt
     ).run();
+
+    if (user.role === "admin") {
+      await writeAuditLog(env, user.id, "auth.admin_login");
+    }
 
     const cookie = [
       `${COOKIE_NAME}=${token}`,
