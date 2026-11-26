@@ -1,5 +1,5 @@
 
-import { requireUser, json, validOrigin } from "./_utils/session.js";
+import { requireUser, json, validOrigin, hasJsonContentType } from "./_utils/session.js";
 
 const AVATAR_IDS = new Set(["person-1", "person-2", "person-3", "person-4", "person-5", "person-6", "person-7", "person-8", "person-9"]);
 
@@ -31,7 +31,7 @@ export async function onRequestPatch({ request, env }) {
   if (!validOrigin(request)) return json({ error: "Solicitare nepermisă." }, 403);
   const auth = await requireUser(request, env);
   if (auth.error) return json({ error: auth.error }, auth.status);
-  if (!request.headers.get("content-type")?.includes("application/json")) return json({ error: "Content-Type trebuie să fie application/json." }, 415);
+  if (!hasJsonContentType(request)) return json({ error: "Content-Type trebuie să fie application/json." }, 415);
   let body;
   try { body = await request.json(); } catch { return json({ error: "Date JSON invalide." }, 400); }
 
