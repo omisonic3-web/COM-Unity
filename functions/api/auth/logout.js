@@ -1,5 +1,5 @@
 
-import { validOrigin } from "../_utils/session.js";
+import { validOrigin, writeAuditLog } from "../_utils/session.js";
 
 const COOKIE_NAME = "__Host-comunity_session";
 
@@ -68,10 +68,22 @@ export async function onRequestPost({ request, env }) {
     if (token && /^[a-f0-9]{64}$/i.test(token)) {
       const tokenHash = await hashToken(token);
 
-      await env.DB.prepare(`
+      const sessionUser = await env.DB.prepare(`
+        SELECT users.id, users.role
+        FROM sessions
+        INNER JOIN users ON users.id = sessions.user_id
+        WHERE sessions.token_hash = ? AND sessions.expires_at > ? AND users.verified = 1
+        LIMIT 1
+      `).bind(tokenHash, new Date().toISOString()).first();
+
+      const deleted = await env.DB.prepare(`
         DELETE FROM sessions
         WHERE token_hash = ?
       `).bind(tokenHash).run();
+
+      if (sessionUser?.role === "admin" && Number(deleted?.meta?.changes || 0) > 0) {
+        await writeAuditLog(env, sessionUser.id, "auth.admin_logout");
+      }
     }
 
     return Response.json(
