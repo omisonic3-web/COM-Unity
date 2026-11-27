@@ -1,3 +1,4 @@
+import { validOrigin, hasJsonContentType, writeAuditLog } from "../_utils/session.js";
 
 const SESSION_DAYS = 30;
 const COOKIE_NAME = "__Host-comunity_session";
@@ -22,6 +23,55 @@ async function hashToken(token) {
   return toHex(new Uint8Array(digest));
 }
 
+const LOGIN_WINDOW_SECONDS = 15 * 60;
+const LOGIN_MAX_FAILURES = 5;
+
+async function getLoginAttemptKey(request, email) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  return hashToken(`${ip}|${email}`);
+}
+
+async function getLoginAttemptState(env, keyHash, now) {
+  const row = await env.DB.prepare(
+    "SELECT window_started_at, attempts FROM auth_login_attempts WHERE key_hash = ?"
+  ).bind(keyHash).first();
+
+  if (!row || now - Number(row.window_started_at) >= LOGIN_WINDOW_SECONDS) {
+    return { attempts: 0, retryAfter: 0 };
+  }
+
+  return {
+    attempts: Number(row.attempts),
+    retryAfter: Math.max(1, LOGIN_WINDOW_SECONDS - (now - Number(row.window_started_at)))
+  };
+}
+
+async function recordFailedLogin(env, keyHash, now) {
+  await env.DB.prepare(`
+    INSERT INTO auth_login_attempts (key_hash, window_started_at, attempts, updated_at)
+    VALUES (?, ?, 1, ?)
+    ON CONFLICT(key_hash) DO UPDATE SET
+      attempts = CASE
+        WHEN excluded.updated_at - auth_login_attempts.window_started_at >= ? THEN 1
+        ELSE auth_login_attempts.attempts + 1
+      END,
+      window_started_at = CASE
+        WHEN excluded.updated_at - auth_login_attempts.window_started_at >= ? THEN excluded.window_started_at
+        ELSE auth_login_attempts.window_started_at
+      END,
+      updated_at = excluded.updated_at
+  `).bind(keyHash, now, now, LOGIN_WINDOW_SECONDS, LOGIN_WINDOW_SECONDS).run();
+
+  // Periodically remove old hashed identifiers; keep each entry for at most about 24 hours.
+  if (now % 3600 < 10) {
+    await env.DB.prepare(
+      "DELETE FROM auth_login_attempts WHERE updated_at < ?"
+    ).bind(now - 24 * 60 * 60).run();
+  }
+
+  return getLoginAttemptState(env, keyHash, now);
+}
+
 async function verifyPassword(password, storedHash) {
   const parts = storedHash.split("$");
 
@@ -34,7 +84,7 @@ async function verifyPassword(password, storedHash) {
   if (
     !Number.isInteger(iterations) ||
     iterations < 100000 ||
-    iterations > 1000000
+    iterations > 100000
   ) {
     return false;
   }
@@ -81,6 +131,13 @@ async function verifyPassword(password, storedHash) {
 }
 
 export async function onRequestPost({ request, env }) {
+  if (!validOrigin(request)) {
+    return Response.json(
+      { error: "Originea cererii nu este permisă." },
+      { status: 403, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
   if (!env.DB) {
     return Response.json(
       { error: "Database unavailable" },
@@ -89,7 +146,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    if (!request.headers.get("content-type")?.includes("application/json")) {
+    if (!hasJsonContentType(request)) {
       return Response.json(
         { error: "Content-Type must be application/json" },
         { status: 415 }
@@ -113,6 +170,23 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
+    const now = Math.floor(Date.now() / 1000);
+    const attemptKeyHash = await getLoginAttemptKey(request, email);
+    const attemptState = await getLoginAttemptState(env, attemptKeyHash, now);
+
+    if (attemptState.attempts >= LOGIN_MAX_FAILURES) {
+      return Response.json(
+        { error: "Prea multe încercări de autentificare. Încearcă din nou peste 15 minute." },
+        {
+          status: 429,
+          headers: {
+            "Cache-Control": "no-store",
+            "Retry-After": String(attemptState.retryAfter)
+          }
+        }
+      );
+    }
+
     const user = await env.DB.prepare(`
       SELECT
         id,
@@ -127,9 +201,16 @@ export async function onRequestPost({ request, env }) {
     `).bind(email).first();
 
     if (!user) {
+      const failed = await recordFailedLogin(env, attemptKeyHash, now);
+      if (failed.attempts >= LOGIN_MAX_FAILURES) {
+        return Response.json(
+          { error: "Prea multe încercări de autentificare. Încearcă din nou peste 15 minute." },
+          { status: 429, headers: { "Cache-Control": "no-store", "Retry-After": String(failed.retryAfter) } }
+        );
+      }
       return Response.json(
         { error: "Invalid email or password." },
-        { status: 401 }
+        { status: 401, headers: { "Cache-Control": "no-store" } }
       );
     }
 
@@ -139,13 +220,21 @@ export async function onRequestPost({ request, env }) {
     );
 
     if (!passwordValid) {
+      const failed = await recordFailedLogin(env, attemptKeyHash, now);
+      if (failed.attempts >= LOGIN_MAX_FAILURES) {
+        return Response.json(
+          { error: "Prea multe încercări de autentificare. Încearcă din nou peste 15 minute." },
+          { status: 429, headers: { "Cache-Control": "no-store", "Retry-After": String(failed.retryAfter) } }
+        );
+      }
       return Response.json(
         { error: "Invalid email or password." },
-        { status: 401 }
+        { status: 401, headers: { "Cache-Control": "no-store" } }
       );
     }
 
     if (user.verified !== 1) {
+      await env.DB.prepare("DELETE FROM auth_login_attempts WHERE key_hash = ?").bind(attemptKeyHash).run();
       return Response.json(
         {
           error: "Email address not verified.",
@@ -154,6 +243,8 @@ export async function onRequestPost({ request, env }) {
         { status: 403 }
       );
     }
+
+    await env.DB.prepare("DELETE FROM auth_login_attempts WHERE key_hash = ?").bind(attemptKeyHash).run();
 
     const tokenBytes = crypto.getRandomValues(new Uint8Array(32));
     const token = toHex(tokenBytes);
@@ -179,6 +270,10 @@ export async function onRequestPost({ request, env }) {
       tokenHash,
       expiresAt
     ).run();
+
+    if (user.role === "admin") {
+      await writeAuditLog(env, user.id, "auth.admin_login");
+    }
 
     const cookie = [
       `${COOKIE_NAME}=${token}`,

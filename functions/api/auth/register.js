@@ -1,7 +1,8 @@
+import { validOrigin, hasJsonContentType } from "../_utils/session.js";
 
-const ITERATIONS = 310000;
+// Cloudflare Workers WebCrypto supports at most 100,000 PBKDF2 iterations.
+const ITERATIONS = 100000;
 const TOKEN_EXPIRY_HOURS = 24;
-const SITE_URL = "https://com-unity.pages.dev";
 
 function toBase64(bytes) {
   let binary = "";
@@ -61,9 +62,60 @@ async function hashToken(token) {
   return toHex(new Uint8Array(digest));
 }
 
-async function sendVerificationEmail(email, displayName, token, apiKey) {
+
+const REGISTRATION_WINDOW_SECONDS = 60 * 60;
+const REGISTRATION_MAX_ATTEMPTS = 3;
+
+async function getRegistrationIpHash(request) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(`com-unity-registration-v1|${ip}`)
+  );
+  return toHex(new Uint8Array(digest));
+}
+
+async function recordRegistrationAttempt(env, ipHash, now) {
+  const row = await env.DB.prepare(`
+    INSERT INTO auth_registration_attempts (
+      ip_hash, window_started_at, attempts, updated_at
+    )
+    VALUES (?, ?, 1, ?)
+    ON CONFLICT(ip_hash) DO UPDATE SET
+      attempts = CASE
+        WHEN excluded.updated_at - auth_registration_attempts.window_started_at >= ? THEN 1
+        ELSE auth_registration_attempts.attempts + 1
+      END,
+      window_started_at = CASE
+        WHEN excluded.updated_at - auth_registration_attempts.window_started_at >= ? THEN excluded.window_started_at
+        ELSE auth_registration_attempts.window_started_at
+      END,
+      updated_at = excluded.updated_at
+    RETURNING attempts, window_started_at
+  `).bind(
+    ipHash, now, now,
+    REGISTRATION_WINDOW_SECONDS,
+    REGISTRATION_WINDOW_SECONDS
+  ).first();
+
+  if (now % 3600 < 10) {
+    await env.DB.prepare(
+      "DELETE FROM auth_registration_attempts WHERE updated_at < ?"
+    ).bind(now - 24 * 60 * 60).run();
+  }
+
+  const attempts = Number(row?.attempts || 0);
+  const retryAfter = Math.max(
+    1,
+    REGISTRATION_WINDOW_SECONDS - (now - Number(row?.window_started_at || now))
+  );
+
+  return { attempts, retryAfter };
+}
+
+async function sendVerificationEmail(email, displayName, token, apiKey, siteUrl) {
   const verificationUrl =
-    `${SITE_URL}/verify-email.html?token=${encodeURIComponent(token)}`;
+    `${siteUrl}/verify-email.html?token=${encodeURIComponent(token)}`;
 
   const safeName = escapeHtml(displayName);
 
@@ -74,7 +126,7 @@ async function sendVerificationEmail(email, displayName, token, apiKey) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      from: "COM-Unity <onboarding@resend.dev>",
+      from: "COM-Unity <noreply@mail.com-unity.ro>",
       to: [email],
       subject: "Confirmă adresa de email — COM-Unity",
       html: `
@@ -107,6 +159,16 @@ async function sendVerificationEmail(email, displayName, token, apiKey) {
 }
 
 export async function onRequestPost({ request, env }) {
+  if (!validOrigin(request)) {
+    return Response.json(
+      { error: "Originea cererii nu este permisă." },
+      { status: 403, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
+  let stage = "environment_check";
+  let failureStage = null;
+
   if (!env.DB || !env.RESEND_API_KEY) {
     return Response.json(
       { error: "Registration service unavailable." },
@@ -115,7 +177,8 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    if (!request.headers.get("content-type")?.includes("application/json")) {
+    stage = "parse_request";
+    if (!hasJsonContentType(request)) {
       return Response.json(
         { error: "Content-Type must be application/json" },
         { status: 415 }
@@ -130,6 +193,23 @@ export async function onRequestPost({ request, env }) {
 
     if (body.website) {
       return Response.json({ ok: true });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const ipHash = await getRegistrationIpHash(request);
+    const registrationState = await recordRegistrationAttempt(env, ipHash, now);
+
+    if (registrationState.attempts > REGISTRATION_MAX_ATTEMPTS) {
+      return Response.json(
+        { error: "Prea multe încercări de înregistrare de la această conexiune. Încearcă din nou peste o oră." },
+        {
+          status: 429,
+          headers: {
+            "Cache-Control": "no-store",
+            "Retry-After": String(registrationState.retryAfter)
+          }
+        }
+      );
     }
 
     if (
@@ -156,6 +236,18 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
+    if (
+      body.ageConfirmed !== true ||
+      body.termsAccepted !== true ||
+      body.privacyAcknowledged !== true
+    ) {
+      return Response.json(
+        { error: "Pentru înregistrare trebuie să confirmi că ai minimum 18 ani, să accepți Termenii și condițiile și să confirmi că ai citit informarea de confidențialitate." },
+        { status: 400 }
+      );
+    }
+
+    stage = "hash_password";
     const id = crypto.randomUUID();
     const passwordHash = await hashPassword(password);
 
@@ -167,6 +259,7 @@ export async function onRequestPost({ request, env }) {
       Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000
     ).toISOString();
 
+    stage = "insert_user";
     await env.DB.prepare(`
       INSERT INTO users (
         id,
@@ -185,6 +278,27 @@ export async function onRequestPost({ request, env }) {
     ).run();
 
     try {
+      stage = "insert_registration_acceptance";
+    await env.DB.prepare(`
+      INSERT INTO registration_acceptances (
+        id,
+        user_id,
+        terms_version,
+        privacy_version,
+        age_confirmed,
+        privacy_acknowledged,
+        accepted_at
+      )
+      VALUES (?, ?, ?, ?, 1, 1, ?)
+    `).bind(
+      crypto.randomUUID(),
+      id,
+      "2026-11-26-v1",
+      "2026-11-26-v1",
+      new Date().toISOString()
+    ).run();
+
+      stage = "insert_verification_token";
       await env.DB.prepare(`
         INSERT INTO email_verification_tokens (
           id,
@@ -200,15 +314,25 @@ export async function onRequestPost({ request, env }) {
         expiresAt
       ).run();
 
+      stage = "send_verification_email";
       await sendVerificationEmail(
         email,
         displayName,
         token,
-        env.RESEND_API_KEY
+        env.RESEND_API_KEY,
+        new URL(request.url).origin
       );
 
     } catch (error) {
+      failureStage = stage;
+      console.error("COM-Unity registration failure during token/email step:", stage, error?.name || "Error", error?.message || "Unknown error");
+      stage = "rollback_registration";
       await env.DB.batch([
+        env.DB.prepare(`
+          DELETE FROM registration_acceptances
+          WHERE user_id = ?
+        `).bind(id),
+
         env.DB.prepare(`
           DELETE FROM email_verification_tokens
           WHERE user_id = ?
@@ -240,6 +364,8 @@ export async function onRequestPost({ request, env }) {
     );
 
   } catch (error) {
+    const diagnosticStage = failureStage || stage;
+    console.error("COM-Unity registration request failed:", diagnosticStage, error?.name || "Error", error?.message || "Unknown error");
     if (error.message?.includes("UNIQUE constraint failed")) {
       return Response.json(
         { error: "An account with this email already exists." },
@@ -248,7 +374,9 @@ export async function onRequestPost({ request, env }) {
     }
 
     return Response.json(
-      { error: "Registration failed. Please try again later." },
+      {
+        error: "Registration failed. Please try again later."
+      },
       {
         status: 500,
         headers: {
