@@ -1946,3 +1946,67 @@ footer .brand {
     animation: none !important;
   }
 }
+
+/* Compact avatar picker: keep the gallery hidden until requested */
+.profile-avatar-menu {
+  width: 100%;
+  max-width: 620px;
+  margin: 8px 0 22px;
+  border: 1px solid var(--theme-border, #ffffff20);
+  border-radius: 14px;
+  background: var(--theme-surface, #111c2d);
+  overflow: hidden;
+}
+.profile-avatar-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--theme-text, #f3f7ff);
+  text-align: left;
+  cursor: pointer;
+}
+.profile-avatar-menu-current {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--theme-accent-soft, #48c9e81c);
+}
+.profile-avatar-menu-copy { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.profile-avatar-menu-copy strong { font-size: 13px; }
+.profile-avatar-menu-copy small { color: var(--theme-muted, #bdc9dc); font-size: 11px; }
+.profile-avatar-menu-action {
+  color: var(--theme-accent, #48c9e8);
+  font-size: 11px;
+  font-weight: 750;
+}
+.profile-avatar-menu-chevron { flex: 0 0 auto; color: var(--theme-muted, #bdc9dc); transition: transform .18s ease; }
+.profile-avatar-menu.is-open .profile-avatar-menu-chevron { transform: rotate(90deg); }
+.profile-avatar-menu-trigger:disabled { cursor: wait; opacity: .7; }
+.profile-avatar-menu .profile-avatar-picker {
+  max-width: none;
+  margin: 0;
+  padding: 14px;
+  border: 0;
+  border-top: 1px solid var(--theme-border, #ffffff20);
+  border-radius: 0;
+  background: transparent;
+}
+.dashboard-layout[data-theme="light"] .profile-avatar-menu {
+  background: #fff;
+  border-color: #d7dfed;
+}
+.dashboard-layout[data-theme="light"] .profile-avatar-menu-trigger { color: #202b43; }
+.dashboard-layout[data-theme="light"] .profile-avatar-menu-copy small { color: #52617a; }
+@media (max-width: 520px) {
+  .profile-avatar-menu { margin-bottom: 16px; }
+  .profile-avatar-menu-trigger { min-height: 58px; padding: 9px 11px; }
+  .profile-avatar-menu .profile-avatar-picker { padding: 11px; }
+}
