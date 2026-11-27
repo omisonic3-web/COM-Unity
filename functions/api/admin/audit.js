@@ -27,7 +27,7 @@ export async function onRequestGet({ request, env }) {
         if (["category", "zone"].includes(source.type)) details.type = source.type;
         if (typeof source.itemId === "string") details.itemId = source.itemId;
         if (typeof source.reportId === "string") details.reportId = source.reportId;
-        if (["reviewing", "resolved", "dismissed"].includes(source.status)) details.status = source.status;
+        if (["pending", "reviewing", "resolved", "dismissed"].includes(source.status)) details.status = source.status;
         if (typeof source.active === "boolean" || source.active === 0 || source.active === 1) details.active = Boolean(source.active);
         if (Array.isArray(source.fields)) details.fields = source.fields.filter(field => ["title","intro","mission","vision","values_text","contact_email","contact_location"].includes(field));
         return {
