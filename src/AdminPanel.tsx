@@ -37,7 +37,7 @@ function formatAuditDetails(value: string) {
     const parts: string[] = [];
     if (details.type) parts.push(details.type === 'category' ? 'Temă' : 'Zonă');
     if (typeof details.active === 'boolean') parts.push(details.active ? 'Activat' : 'Dezactivat');
-    if (details.status) parts.push(({ reviewing: 'În analiză', resolved: 'Rezolvată', dismissed: 'Respinsă' } as Record<string, string>)[details.status] || details.status);
+    if (details.status) parts.push(({ pending: 'Redeschisă · în așteptare', reviewing: 'În analiză', resolved: 'Rezolvată', dismissed: 'Respinsă' } as Record<string, string>)[details.status] || details.status);
     if (details.fields?.length) parts.push('Câmpuri: ' + details.fields.length);
     if (details.itemId) parts.push('ID: ' + details.itemId.slice(0, 8));
     if (details.reportId) parts.push('Sesizare: ' + details.reportId.slice(0, 8));
@@ -487,6 +487,7 @@ function AdminPanel() {
                   <button type="button" className="admin-catalog-toggle" disabled={updatingReportId === report.id || report.status === 'reviewing'} onClick={() => void updateReportStatus(report, 'reviewing')}>În analiză</button>
                   <button type="button" className="admin-catalog-toggle" disabled={updatingReportId === report.id || report.status === 'resolved'} onClick={() => void updateReportStatus(report, 'resolved')}>Rezolvată</button>
                   <button type="button" className="admin-catalog-toggle" disabled={updatingReportId === report.id || report.status === 'dismissed'} onClick={() => void updateReportStatus(report, 'dismissed')}>Respinsă</button>
+                  {(report.status === 'resolved' || report.status === 'dismissed') && <button type="button" className="admin-catalog-toggle" disabled={updatingReportId === report.id} onClick={() => void updateReportStatus(report, 'pending')}>Redeschide</button>}
                 </div>
               </article>
             ))}
