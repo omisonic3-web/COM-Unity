@@ -149,6 +149,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
   const [profileName, setProfileName] = useState(user.displayName);
   const [avatarId, setAvatarId] = useState('person-1');
   const [avatarSaving, setAvatarSaving] = useState(false);
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   const [reputation, setReputation] = useState({ average: 0, count: 0, completedProjects: 0 });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
@@ -331,6 +332,7 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || 'Avatarul nu a putut fi salvat.');
       setProfileSuccess('Avatarul a fost actualizat.');
+      setAvatarPickerOpen(false);
     } catch (error) { setProfileError(error instanceof Error ? error.message : 'A apărut o eroare.'); }
     finally { setAvatarSaving(false); }
   }
@@ -515,17 +517,27 @@ function Dashboard({ user, onLogout, loading, onProfileUpdated }: Props) {
               <div className="profile-detail-avatar"><AvatarIllustration avatarId={avatarId} size={88} /></div>
               {profileSuccess && <div className="requests-alert success" role="status">{profileSuccess}</div>}
 
-              <div className="profile-avatar-picker">
-                <div className="profile-avatar-picker-heading"><strong>Alege-ți avatarul</strong><span>Personajul va apărea lângă numele tău în platformă.</span></div>
-                <div className="profile-avatar-grid">
-                  {avatarOptions.map(option => (
-                    <button key={option.id} type="button" className={`profile-avatar-option ${avatarId === option.id ? 'selected' : ''}`} onClick={() => void saveAvatar(option.id)} disabled={avatarSaving} aria-pressed={avatarId === option.id} aria-label={`Alege avatarul: ${option.label}`}>
-                      <AvatarIllustration avatarId={option.id} size={64}/><span className="profile-avatar-label">{option.label}</span>
-                      {avatarId === option.id && <span className="avatar-selected-check">✓</span>}
-                    </button>
-                  ))}
-                </div>
-                {avatarSaving && <small className="profile-avatar-saving">Se salvează avatarul...</small>}
+              <div className={`profile-avatar-menu ${avatarPickerOpen ? 'is-open' : ''}`}>
+                <button type="button" className="profile-avatar-menu-trigger" onClick={() => setAvatarPickerOpen(open => !open)} aria-expanded={avatarPickerOpen} aria-controls="profile-avatar-options" disabled={avatarSaving}>
+                  <span className="profile-avatar-menu-current"><AvatarIllustration avatarId={avatarId} size={34} /></span>
+                  <span className="profile-avatar-menu-copy"><strong>Avatarul meu</strong><small>{avatarPickerOpen ? 'Alege un alt personaj' : 'Schimbă avatarul'}</small></span>
+                  <span className="profile-avatar-menu-action">{avatarPickerOpen ? 'Închide' : 'Schimbă'}</span>
+                  <ChevronRight className="profile-avatar-menu-chevron" size={17} />
+                </button>
+                {avatarPickerOpen && (
+                  <div className="profile-avatar-picker" id="profile-avatar-options">
+                    <div className="profile-avatar-picker-heading"><strong>Alege-ți avatarul</strong><span>Avatarul selectat va apărea lângă numele tău.</span></div>
+                    <div className="profile-avatar-grid">
+                      {avatarOptions.map(option => (
+                        <button key={option.id} type="button" className={`profile-avatar-option ${avatarId === option.id ? 'selected' : ''}`} onClick={() => void saveAvatar(option.id)} disabled={avatarSaving} aria-pressed={avatarId === option.id} aria-label={`Alege avatarul: ${option.label}`}>
+                          <AvatarIllustration avatarId={option.id} size={64}/><span className="profile-avatar-label">{option.label}</span>
+                          {avatarId === option.id && <span className="avatar-selected-check">✓</span>}
+                        </button>
+                      ))}
+                    </div>
+                    {avatarSaving && <small className="profile-avatar-saving">Se salvează avatarul...</small>}
+                  </div>
+                )}
               </div>
 
               {profileError && <div className="requests-alert error" role="alert">{profileError}</div>}
