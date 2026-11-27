@@ -1556,3 +1556,236 @@ footer .brand {
 .dashboard-layout[data-theme="light"] .account-deletion-zone h3,.dashboard-layout[data-theme="light"] .account-deletion-form label{color:#26344b}
 .dashboard-layout[data-theme="light"] .account-deletion-zone p,.dashboard-layout[data-theme="light"] .account-deletion-form ul{color:#52617a}
 @media(max-width:520px){.account-deletion-zone{padding:14px}.account-deletion-form .request-form-footer{flex-wrap:wrap}.account-deletion-confirm{width:100%}}
+
+
+/* Mobile UX pass — navigation, spacing, touch targets and overflow */
+@media (max-width: 760px) {
+  .dashboard-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding: 10px 12px 9px;
+    background: rgba(8, 15, 28, .96);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+  }
+
+  .dashboard-brand {
+    padding: 0 4px 9px;
+    font-size: 18px;
+  }
+
+  .dashboard-brand .brand-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+
+  .dashboard-nav {
+    gap: 7px;
+    margin: 0 -2px;
+    padding: 2px 2px 7px;
+    scroll-padding-inline: 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .dashboard-nav::-webkit-scrollbar { display: none; }
+
+  .dashboard-nav-item {
+    min-height: 42px;
+    padding: 0 13px;
+    border: 1px solid rgba(148, 163, 184, .16);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .035);
+    white-space: nowrap;
+    scroll-snap-align: start;
+  }
+
+  .dashboard-nav-item.active {
+    border-color: var(--theme-accent-border, rgba(94, 217, 240, .45));
+    background: var(--theme-accent-soft, rgba(72, 201, 232, .14));
+  }
+
+  .dashboard-topbar {
+    position: relative;
+    min-height: 60px;
+    gap: 8px;
+    padding: 8px 14px;
+  }
+
+  .dashboard-breadcrumb {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .dashboard-home-button {
+    min-height: 40px;
+  }
+
+  .dashboard-account { flex: 0 0 auto; }
+
+  .dashboard-content {
+    width: 100%;
+    padding: 18px 14px calc(28px + env(safe-area-inset-bottom));
+  }
+
+  .dashboard-welcome {
+    gap: 12px;
+    padding: 21px 18px;
+    border-radius: 18px;
+  }
+
+  .dashboard-section-heading { margin: 25px 0 14px; }
+  .dashboard-action-grid { grid-template-columns: 1fr; gap: 10px; }
+  .dashboard-action-card { min-height: 84px; padding: 14px; }
+  .dashboard-lower-grid { gap: 12px; }
+  .dashboard-panel { min-width: 0; border-radius: 16px; }
+  .dashboard-footer { gap: 10px; padding: 18px 0; }
+
+  .help-requests-module,
+  .help-offers-module,
+  .projects-module,
+  .reports-module,
+  .leaderboard-module,
+  .messages-module,
+  .admin-panel {
+    min-width: 0;
+    gap: 13px;
+  }
+
+  .requests-toolbar,
+  .offers-toolbar,
+  .projects-toolbar {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .requests-toolbar-actions,
+  .requests-filters,
+  .leaderboard-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .requests-filters::-webkit-scrollbar,
+  .leaderboard-tabs::-webkit-scrollbar { display: none; }
+
+  .requests-filters button,
+  .leaderboard-tabs button {
+    min-height: 40px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .request-form,
+  .admin-catalog,
+  .admin-members,
+  .admin-reports {
+    padding: 15px;
+  }
+
+  .request-form-row,
+  .reports-target-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .request-form input,
+  .request-form textarea,
+  .request-form select,
+  .account-deletion-form input,
+  .project-rating-form select,
+  .project-rating-form textarea {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .request-form-footer > .button,
+  .request-form-footer .button-primary,
+  .account-deletion-confirm {
+    min-height: 44px;
+  }
+
+  .request-card,
+  .offer-card,
+  .project-card,
+  .report-item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .request-card-actions,
+  .report-moderation-actions,
+  .admin-link-actions {
+    flex-wrap: wrap;
+  }
+
+  .request-card-actions button,
+  .report-moderation-actions .button {
+    min-height: 40px;
+  }
+
+  .dashboard-content table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-content input,
+  .dashboard-content select,
+  .dashboard-content textarea {
+    max-width: 100%;
+  }
+
+  .global-message {
+    margin: 10px 12px 0;
+    padding: 12px 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-sidebar { padding-inline: 10px; }
+  .dashboard-brand { font-size: 17px; }
+  .dashboard-nav-item { min-height: 40px; padding-inline: 11px; font-size: 11px; }
+  .dashboard-topbar { min-height: 56px; padding-inline: 10px; }
+  .dashboard-home-button { min-height: 38px; }
+  .dashboard-content { padding-inline: 11px; }
+  .dashboard-welcome { padding: 19px 15px; }
+  .dashboard-welcome h1 { font-size: clamp(24px, 7vw, 29px); }
+  .dashboard-panel { padding: 15px; }
+  .request-form { padding: 13px; }
+  .request-card-top,
+  .request-meta { align-items: flex-start; flex-wrap: wrap; }
+  .request-card-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .request-card-actions > * { min-width: 0; }
+  .profile-reputation { align-items: flex-start; gap: 10px; padding: 13px; }
+  .profile-reputation-score > strong { font-size: 22px; }
+  .leaderboard-card { min-width: 0; }
+  .leaderboard-member strong { overflow-wrap: anywhere; }
+  .modal-backdrop { align-items: start; padding: 12px; }
+  .auth-modal {
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    margin: auto 0;
+    padding: 27px 18px;
+    border-radius: 19px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .button,
+  .dashboard-nav-item,
+  .requests-filters button,
+  .leaderboard-tabs button,
+  .dashboard-home-button,
+  .dashboard-logout {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .button { min-height: 44px; }
+}
