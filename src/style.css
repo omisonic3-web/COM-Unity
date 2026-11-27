@@ -1789,3 +1789,160 @@ footer .brand {
 
   .button { min-height: 44px; }
 }
+
+
+/* Premium UI polish — consistent surfaces, focus states and theme-aware controls */
+.dashboard-layout {
+  --ui-radius-card: 18px;
+  --ui-radius-control: 12px;
+  --ui-shadow-card: 0 12px 34px rgba(0, 0, 0, .14);
+  --ui-focus-ring: 0 0 0 3px var(--theme-accent-soft, rgba(72, 201, 232, .2));
+}
+
+.dashboard-layout .dashboard-panel,
+.dashboard-layout .dashboard-action-card,
+.dashboard-layout .admin-stat-card,
+.dashboard-layout .request-card,
+.dashboard-layout .offer-card,
+.dashboard-layout .project-card,
+.dashboard-layout .report-item,
+.dashboard-layout .leaderboard-card,
+.dashboard-layout .profile-theme-option,
+.dashboard-layout .useful-link-card,
+.dashboard-layout .about-info-card,
+.dashboard-layout .about-values-card,
+.dashboard-layout .about-contact-card {
+  border-radius: var(--ui-radius-card);
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+.dashboard-layout .dashboard-panel,
+.dashboard-layout .dashboard-action-card {
+  box-shadow: var(--ui-shadow-card);
+}
+
+.dashboard-layout .button,
+.dashboard-layout button:not(.global-message button):not(.modal-close) {
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.dashboard-layout .button:focus-visible,
+.dashboard-layout button:focus-visible,
+.dashboard-layout a:focus-visible,
+.dashboard-layout input:focus-visible,
+.dashboard-layout select:focus-visible,
+.dashboard-layout textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--ui-focus-ring);
+}
+
+.dashboard-layout input,
+.dashboard-layout select,
+.dashboard-layout textarea {
+  border-radius: var(--ui-radius-control);
+}
+
+.dashboard-layout .button-primary {
+  box-shadow: 0 7px 22px color-mix(in srgb, var(--theme-accent, #48c9e8) 22%, transparent);
+}
+
+.dashboard-layout .button-primary:active,
+.dashboard-layout .button-outline:active {
+  transform: translateY(1px) scale(.985);
+}
+
+.dashboard-layout .dashboard-section-heading h2,
+.dashboard-layout .panel-heading h2,
+.dashboard-layout .admin-panel-heading h2 {
+  letter-spacing: -.025em;
+}
+
+.dashboard-layout .global-message {
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .12);
+}
+
+.dashboard-layout[data-theme="light"] {
+  --ui-shadow-card: 0 10px 28px rgba(42, 59, 94, .07);
+  --ui-focus-ring: 0 0 0 3px rgba(83, 107, 214, .18);
+}
+
+.dashboard-layout[data-theme="light"] .dashboard-panel,
+.dashboard-layout[data-theme="light"] .dashboard-action-card,
+.dashboard-layout[data-theme="light"] .admin-stat-card,
+.dashboard-layout[data-theme="light"] .request-card,
+.dashboard-layout[data-theme="light"] .offer-card,
+.dashboard-layout[data-theme="light"] .project-card,
+.dashboard-layout[data-theme="light"] .report-item,
+.dashboard-layout[data-theme="light"] .leaderboard-card,
+.dashboard-layout[data-theme="light"] .profile-theme-option,
+.dashboard-layout[data-theme="light"] .useful-link-card,
+.dashboard-layout[data-theme="light"] .about-info-card,
+.dashboard-layout[data-theme="light"] .about-values-card,
+.dashboard-layout[data-theme="light"] .about-contact-card {
+  border-color: #dce3f0;
+  box-shadow: var(--ui-shadow-card);
+}
+
+.dashboard-layout[data-theme="light"] .button-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #536bd6, #7188e8);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dashboard-layout .dashboard-action-card:hover,
+  .dashboard-layout .dashboard-panel:hover,
+  .dashboard-layout .request-card:hover,
+  .dashboard-layout .offer-card:hover,
+  .dashboard-layout .project-card:hover,
+  .dashboard-layout .profile-theme-option:hover {
+    border-color: var(--theme-accent-border, rgba(94, 217, 240, .35));
+    box-shadow: 0 16px 38px rgba(0, 0, 0, .18);
+  }
+
+  .dashboard-layout[data-theme="light"] .dashboard-action-card:hover,
+  .dashboard-layout[data-theme="light"] .dashboard-panel:hover,
+  .dashboard-layout[data-theme="light"] .request-card:hover,
+  .dashboard-layout[data-theme="light"] .offer-card:hover,
+  .dashboard-layout[data-theme="light"] .project-card:hover,
+  .dashboard-layout[data-theme="light"] .profile-theme-option:hover {
+    box-shadow: 0 14px 32px rgba(42, 59, 94, .11);
+  }
+
+  .dashboard-layout .button-primary:hover {
+    transform: translateY(-1px);
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard-layout .dashboard-panel,
+  .dashboard-layout .dashboard-action-card,
+  .dashboard-layout .request-card,
+  .dashboard-layout .offer-card,
+  .dashboard-layout .project-card,
+  .dashboard-layout .report-item {
+    box-shadow: 0 7px 20px rgba(0, 0, 0, .1);
+  }
+
+  .dashboard-layout .dashboard-section-heading h2,
+  .dashboard-layout .panel-heading h2 {
+    font-size: 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-layout .dashboard-panel,
+  .dashboard-layout .dashboard-action-card,
+  .dashboard-layout .admin-stat-card,
+  .dashboard-layout .request-card,
+  .dashboard-layout .offer-card,
+  .dashboard-layout .project-card,
+  .dashboard-layout .report-item,
+  .dashboard-layout .leaderboard-card,
+  .dashboard-layout .profile-theme-option,
+  .dashboard-layout .button,
+  .dashboard-layout button {
+    transition: none !important;
+    animation: none !important;
+  }
+}
