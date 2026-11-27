@@ -2010,3 +2010,234 @@ footer .brand {
   .profile-avatar-menu-trigger { min-height: 58px; padding: 9px 11px; }
   .profile-avatar-menu .profile-avatar-picker { padding: 11px; }
 }
+
+
+/* Public landing page — refined mobile layout */
+@media (max-width: 520px) {
+  .app-shell:not(:has(.dashboard-layout)) {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  .navbar {
+    min-width: 0;
+    gap: 10px;
+    height: 70px;
+  }
+
+  .navbar > .brand {
+    min-width: 0;
+    gap: 7px;
+    font-size: 18px;
+    white-space: nowrap;
+  }
+
+  .navbar .brand-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .nav-actions {
+    flex: 0 0 auto;
+    gap: 7px;
+  }
+
+  .nav-actions .button-primary {
+    min-height: 42px;
+    padding: 9px 11px;
+    gap: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .hero {
+    min-height: 0;
+    gap: 24px;
+    padding: 52px 0 34px;
+  }
+
+  .hero .eyebrow {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  .hero h1 {
+    margin: 20px 0 15px;
+    font-size: clamp(35px, 10vw, 44px);
+    line-height: 1.08;
+    letter-spacing: -1.8px;
+    overflow-wrap: anywhere;
+  }
+
+  .hero-content > p {
+    max-width: 42rem;
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  .hero-actions {
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .hero-actions .button {
+    min-height: 46px;
+    padding: 12px 15px;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .trust-line {
+    align-items: flex-start;
+    margin-top: 22px;
+    line-height: 1.5;
+  }
+
+  .hero-visual {
+    min-height: 300px;
+    margin: 0 -3px;
+  }
+
+  .glow-orb {
+    width: 230px;
+    height: 230px;
+    filter: blur(75px);
+  }
+
+  .visual-card {
+    width: min(100%, 340px);
+    padding: 24px;
+    border-radius: 22px;
+  }
+
+  .visual-icon {
+    width: 62px;
+    height: 62px;
+    border-radius: 18px;
+  }
+
+  .visual-card h3 {
+    margin: 20px 0 9px;
+    font-size: 22px;
+  }
+
+  .visual-card p {
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .visual-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+  }
+
+  .floating-card {
+    gap: 7px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+  }
+
+  .floating-one { top: 5px; right: 0; }
+  .floating-two { bottom: 5px; left: 0; }
+
+  .features {
+    padding: 58px 0 68px;
+  }
+
+  .section-heading h2 {
+    margin-top: 15px;
+    font-size: clamp(27px, 7.5vw, 34px);
+    line-height: 1.15;
+    letter-spacing: -1.2px;
+  }
+
+  .section-heading p {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .feature-grid {
+    gap: 13px;
+    margin-top: 30px;
+  }
+
+  .feature-card {
+    min-width: 0;
+    padding: 21px;
+    border-radius: 18px;
+  }
+
+  footer {
+    gap: 14px;
+    padding: 24px 0 calc(24px + env(safe-area-inset-bottom));
+  }
+
+  footer .legal-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 16px;
+  }
+
+  .modal-backdrop {
+    align-items: start;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+  }
+
+  .auth-modal {
+    width: 100%;
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    margin: auto 0;
+    padding: 28px 18px 22px;
+    border-radius: 20px;
+    overscroll-behavior: contain;
+  }
+
+  .auth-modal h2 {
+    padding-right: 22px;
+    font-size: 27px;
+  }
+
+  .auth-modal form > label {
+    gap: 7px;
+    font-size: 12px;
+  }
+
+  .auth-modal input:not([type="checkbox"]):not([type="radio"]) {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  .auth-submit {
+    min-height: 48px;
+  }
+
+  .registration-consents {
+    min-width: 0;
+    padding: 12px;
+  }
+
+  .consent-option {
+    align-items: flex-start;
+    gap: 9px;
+    line-height: 1.5;
+  }
+
+  .consent-option input {
+    flex: 0 0 auto;
+    margin-top: 2px;
+  }
+}
+
+@media (max-width: 380px) {
+  .navbar > .brand { font-size: 16px; }
+  .navbar .brand-icon { width: 31px; height: 31px; }
+  .nav-actions .button-primary { padding-inline: 9px; font-size: 10px; }
+  .hero h1 { font-size: clamp(32px, 9.5vw, 37px); letter-spacing: -1.5px; }
+  .hero-visual { min-height: 275px; }
+  .visual-card { padding: 20px; }
+  .floating-card { padding: 8px 10px; font-size: 10px; }
+  .auth-modal { padding-inline: 15px; }
+}
