@@ -101,7 +101,7 @@ export async function onRequestPatch({ request, env }) {
   if (auth.user.role !== "admin" && auth.user.role !== "moderator") return json({ error: "Acces rezervat echipei de moderare." }, 403);
   let body;
   try { body = await request.json(); } catch { return json({ error: "Date JSON invalide." }, 400); }
-  const statuses = ["reviewing", "resolved", "dismissed"];
+  const statuses = ["pending", "reviewing", "resolved", "dismissed"];
   const hasStatus = typeof body?.status === "string";
   const hasNote = typeof body?.adminNote === "string";
   if (typeof body?.id !== "string" || !body.id || (!hasStatus && !hasNote)) return json({ error: "Actualizare invalidă." }, 400);
