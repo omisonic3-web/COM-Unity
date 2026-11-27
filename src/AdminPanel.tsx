@@ -275,7 +275,7 @@ function AdminPanel() {
     }
   }
 
-  async function updateReportStatus(report: Report, status: 'reviewing' | 'resolved' | 'dismissed') {
+  async function updateReportStatus(report: Report, status: 'pending' | 'reviewing' | 'resolved' | 'dismissed') {
     setUpdatingReportId(report.id);
     setError('');
     setSuccess('');
